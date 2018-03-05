@@ -1,0 +1,42 @@
+Initialisation des buffers
+- Le robot à été intialisé via la soupe du triangle
+- Le triangle est initilialisé via le maillage indicé ('vertices' pour les points, 'tri' pour la topologie)
+
+Tableau vertices : position des sommets
+Tableau tri : topologie des triangles
+Le tableau tri store les indices (trois par trois) du tableau vertices qui forment les triangles
+
+DrawElements vs DrawArrays
+drawElements est utilisé pour les maillages indicés alors que drawArrays est pour les soupes de triangles.
+drawElements est plus optimisé car cela permet de ne processer qu'une fois chaque vertex avec le vertex shader.
+
+Fonctionnement cube.hmtl
+webGLStart appelée en premier, initialise webGL (canvas), les shaders, le cube, et lance la boucle de dessin (draw)
+Projection en perspective utilisée
+Caméra placée a -5z par rapport au repère (0,0,0)
+
+gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+Elle représente un point de la scène en perspective selon une vue caméra dans un cube -1,-1,0,0
+
+gl_FragColor = vec4(1.0,0.0,0.0,1.0); -> couleur indépendante
+gl_FragColor = vec4(vPosition*0.5+0.5, 1); -> couleur dépendante de la position par rapport à l'origine
+
+Une variable uniforme (uniform) est comme 'globale', du moins au cycle de rendu actuel,
+elle ne change pas durant le calcul du rendu, et reste donc la même pour chaque appel du shader
+Une variable attribut (attribute) est comme 'locale', elle change entre chaque appel du shader dans un même cycle de rendu,
+puisqu'elle représente la valeur actuellement calculée
+
+Draw des ligne : gl.drawElements(gl.LINES, this.triangles.numItems, gl.UNSIGNED_SHORT, 0);
+GL_TRIANGLES semble plus adapté,
+
+Un attribut est local et change avec la vertex traitée dans le shader, il ne peut être utilisé que dans le vertex shader.
+Un uniforme est global aux vertexs et sa modification se répercutera pour tous. Il sont récupérables dans tout les shaders.
+Un varying est partagé entre shaders, il permet généralement de passer des attributs de shaders à d'autres.
+
+Commentaires :
+- La compréhension qu'un attribut (et son nom/index) n'est pas définit par webGL mais bien initialisé avec une première valeur en javascript puis partagé avec les shaders était difficile.
+- Les points 1, 2, 3, 4 puis 1, 2 dans 'Attributs et varyings' aident peut-être trops, ils font littéralement le travail à notre place.
+Ne lisant pas le TP en entier mais réalisant les parties au fur et à mesure, je me suis rendu compte après que ces points décrivaient la procédure exacte pour ajouter un attribut et un uniform.
+Alors qu'en lisant le cours et recherchant dans la documentation, cela est largement fesable et demande même plus d'implication donc une meilleure compréhension du sujet
+- La définition d'un shader, son utilité et ses conséquences sur webGL étaient flouent, pourquoi devoir utiliser un programme externe à JavaScript et communiquer des références avec GPU plutot que le faire en JS ?
+La réponse à pour moi été trouvée sur la documentation webGL Mozilla (MDN).

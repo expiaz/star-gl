@@ -1,0 +1,22 @@
+Comment a-t-on fait pour plaquer la texture sur chacune des faces du cube ?
+celle-ci est calculée par interpolation pour chaque point à partir de la texture entière (0,0 -> 1,1 pour chaque face)
+
+Combien de sommets ont été utilisés pour créer le cube ?
+36 sommets déclarés, 24 sommets déssinés (certains sont utilisés pour plusieurs triangles)
+
+Combien de triangles ?
+12 triangles, 2 par face
+
+Pensez-vous que l’on aurait pu obtenir la même chose avec le cube contenant 8 attributs (8 sommets / 8 couleurs/ etc)
+que l’on avait utilisé lors du TP précédent ?
+Oui, il y a besoin de définir seulement les coordonnées UV des vertices déclarées, les faces seront créées dans la topologie en fonction
+en fonction des 8 vertices. Par contre, il n'y aura que deux faces pouvant avoir une texture parametrable,
+les autre faces seront des duplicata de celles-ci
+
+Avec quelles coordonnées ?
+Les coordonnées de la front et back face car ce sont les vertices déclarées
+(cela dépend finalement des vertices déclarées et la topologie utilisée).
+
+gl.LINEAR adoucit les pixels en interpolant les 4 couleurs autour du point, ce qui rend la texture plus douce
+gl.NEAREST ne prend que la couleur du pixel dans lequel le point est contenu, ce qui créer une texture 'pixelisée'
+

@@ -1,0 +1,257 @@
+<html><head>
+<title>Points</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+
+<script type="text/javascript" src="gl-matrix.js"></script>
+<script type="text/javascript" src="webgl-utils.js"></script>
+<script type="text/javascript" src="cube.js"></script>
+
+<script id="shader-vs" type="x-shader/x-vertex">
+    // *** le vertex shader *** 
+    
+    //
+    // TODO: ajouter uniform (taille des points) attribut et varying (couleur)
+    //
+
+    precision mediump float; // precision des nombres flottant
+
+    attribute vec3 aVertexPosition; // la position du sommet
+    attribute vec4 aVertexColor; // la couleur du sommet
+
+    uniform mat4 uMVMatrix; // modelviewMatrix
+    uniform mat4 uPMatrix; // projectionMatrix
+    uniform float uPointSize;
+
+    varying vec3 vPosition;
+    varying vec4 vColor;
+
+    void main(void) {
+        // position du sommet a calculer
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+
+        // taille des points (seulement pour le mode point)
+        gl_PointSize = uPointSize;
+        vPosition = aVertexPosition;
+        vColor = aVertexColor;
+    }
+</script>
+
+<script id="shader-fs" type="x-shader/x-fragment">
+    // *** fragment shader ***
+
+    //
+    // TODO: ajouter varying (couleur)
+    //
+
+    precision mediump float; // precision des nombres flottant
+
+    varying vec3 vPosition;
+    varying vec4 vColor;
+
+    void main(void) {
+        // la couleur est attribuee au fragment courant
+        gl_FragColor = vColor; /*vec4(vPosition*0.5+0.5, 1); vec4(1.0,0.0,0.0,1.0);*/
+    }
+</script>
+
+
+
+<script type="text/javascript">
+
+    var gl; // les fonctionnalités OpenGL
+    var theCube; // un cube (voir cube.js)
+    var crot; // angle de rotation du cube
+
+    // initialisation du contexte OpenGL
+    function initGL(canvas) {
+        try {
+            gl = canvas.getContext("experimental-webgl");
+            gl.viewportWidth = canvas.width;
+            gl.viewportHeight = canvas.height;
+        } catch (e) {
+        }
+        if (!gl) {
+            alert("Could not initialise WebGL, sorry :-(");
+        }
+    }
+
+    // charge et compile les shaders
+    function getShader(gl, id) {
+        var shaderScript = document.getElementById(id);
+        if (!shaderScript) {
+            return null;
+        }
+
+        var str = "";
+        var k = shaderScript.firstChild;
+        while (k) {
+            if (k.nodeType == 3) {
+                str += k.textContent;
+            }
+            k = k.nextSibling;
+        }
+
+        var shader;
+        if (shaderScript.type == "x-shader/x-fragment") {
+            shader = gl.createShader(gl.FRAGMENT_SHADER);
+        } else if (shaderScript.type == "x-shader/x-vertex") {
+            shader = gl.createShader(gl.VERTEX_SHADER);
+        } else {
+            return null;
+        }
+
+        gl.shaderSource(shader, str);
+        gl.compileShader(shader);
+
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            alert(gl.getShaderInfoLog(shader));
+            return null;
+        }
+
+        return shader;
+    }
+
+    // le programme qui gere les shaders executes sur GPU
+    var shaderProgram;
+
+    // initialise les shaders et recupere l'adresse memoire des attributs et variables utilisees
+    function initShaders() {
+        // recupere les vertex et fragment shaders 
+        var fragmentShader = getShader(gl, "shader-fs");
+        var vertexShader = getShader(gl, "shader-vs");
+
+        // cree le programme et lui associe les vertex/fragments
+        shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, vertexShader);
+        gl.attachShader(shaderProgram, fragmentShader);
+        gl.linkProgram(shaderProgram);
+
+        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+            alert("Could not initialise shaders");
+        }
+
+        // active ce shader
+        gl.useProgram(shaderProgram);
+
+        // recupere la localisation de l'attribut dans lequel on souhaite acceder aux positions
+        shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+        gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute); // active cet attribut
+
+        // recupere la localisation de l'attribut dans lequel on souhaite acceder aux coleurs
+        shaderProgram.vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
+        gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute); // active cet attribut
+
+        // recupere les localisation des variables uniformes (globales) pour les 2 matrices
+        shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+        shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+
+        // recupere la locatlisation de la variable uniforme pour la taille des points
+        shaderProgram.uPointSizeUniform = gl.getUniformLocation(shaderProgram, "uPointSize");
+    }
+
+    // les matrices modelviewMatrix et projectionMatrix
+    var mvMatrix = mat4.create();
+    var pMatrix = mat4.create();
+    var uPointSize = 10.0;
+
+    // fonction qui s'occupe de passer les matrices au shader
+    function setMatrixUniforms() {
+        gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+        gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+    }
+
+
+    function drawScene() {
+        // initialisation du viewport
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+
+        // efface les buffers de couleur et de profondeur
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // cree une matrice de projection persepctive et la stocke dans pMatrix
+        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+
+        // cree une matrice de modelview par defaut (mvMatrix)
+        mat4.lookAt([0,0,-5],[0,0,0],[0,1,0],mvMatrix);
+
+        // rotation pour animer 
+        mat4.rotate(mvMatrix,crot,vec3.normalize([1,-1,0]));
+
+        // envoie les matrices (modelview et projection) au shader
+        setMatrixUniforms();
+
+        gl.uniform1f(shaderProgram.uPointSizeUniform, uPointSize);
+
+        // dessin du cube 
+        theCube.draw(shaderProgram);
+    }
+
+
+
+    // utile pour animer 
+    var lastTime = 0;
+    function animate() {
+        var timeNow = new Date().getTime();
+        if (lastTime != 0) {
+            var elapsed = timeNow - lastTime;
+            crot = (crot+elapsed*0.001)%(2.0*Math.PI);
+        }
+        lastTime = timeNow;
+    }
+
+    // evenements claviers 
+    function keypressed(event) {
+
+        var intKeyCode = event.keyCode;
+
+        if(intKeyCode==65) { // A
+            // incrémentez
+            ++uPointSize;
+        } else if(intKeyCode==81) { // Q
+            // décrémentez
+            --uPointSize;
+        } 
+    }
+
+
+    function tick() {
+        requestAnimFrame(tick);
+        drawScene();
+        animate();
+    }
+
+
+    function webGLStart() {
+        // initialisation du canvas et des objets OpenGL
+        var canvas = document.getElementById("le-cube");
+        initGL(canvas);
+        initShaders();
+
+        // creation du cube
+        theCube = new CubeFaces8();
+        crot = 0.0;
+
+        // la couleur de fond sera noire
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+        // active le teste de profondeur 
+        gl.enable(gl.DEPTH_TEST);
+
+        // evenements claviers 
+        document.onkeydown = keypressed;
+
+        // dessine la scene
+        tick();
+    }
+
+
+</script>
+
+
+</head>
+
+
+<body onload="webGLStart();">
+    <canvas id="le-cube" style="border: none;" width="800" height="800"></canvas>
+
+</body></html>
