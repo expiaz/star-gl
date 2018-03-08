@@ -9,394 +9,478 @@
 <script type="text/javascript" src="heightfield.js"></script>
 <script type="text/javascript" src="background.js"></script>
 <script type="text/javascript" src="spaceship.js"></script>
+<script type="text/javascript" src="laser.js"></script>
 
 <script id="heightfield-vs" type="x-shader/x-vertex">
-    // *** le vertex shader ***
-    attribute vec3 aVertexPosition; // la position du sommet
-    attribute vec2 aVertexCoord; // sa coordonnee de texture
+  // *** le vertex shader ***
+  attribute vec3 aVertexPosition; // la position du sommet
+  attribute vec2 aVertexCoord; // sa coordonnee de texture
 
-    varying vec2 vTextureCoord; // on souhaite rasteriser la coordonnee
+  varying vec2 vTextureCoord; // on souhaite rasteriser la coordonnee
 
-    void main(void) {
-        // projection de la position
-        gl_Position = vec4(aVertexPosition, 1.0);
+  void main(void) {
+    // projection de la position
+    gl_Position = vec4(aVertexPosition, 1.0);
 
-        // stockage de la coordonnee de texture
-        vTextureCoord = aVertexCoord;
-    }
+    // stockage de la coordonnee de texture
+    vTextureCoord = aVertexCoord;
+  }
 </script>
 
 <script id="heightfield-fs" type="x-shader/x-fragment">
-  // *** le fragment shader ***
-  precision highp float; // precision des nombres flottant
+// *** le fragment shader ***
+precision highp float; // precision des nombres flottant
 
-  uniform vec2 uOffset;
-  uniform float uAmplitude; // amplitude du bruit
-  uniform float uFrequency; // frequence du bruit
-  uniform float uPersistence; // persistence du bruit
+uniform vec2 uOffset;
+uniform float uAmplitude; // amplitude du bruit
+uniform float uFrequency; // frequence du bruit
+uniform float uPersistence; // persistence du bruit
 
-  varying vec2 vTextureCoord; // recuperation de la coord rasterisee
+varying vec2 vTextureCoord; // recuperation de la coord rasterisee
 
-  float hash(vec2 p) {
-      // pseudo random fonction
-      float h = dot(mod(p,vec2(100.0)),vec2(127.1,311.7));
-      return -1.0 + 2.0*fract(sin(h)*43758.5453123);
+float hash(vec2 p) {
+  // pseudo random fonction
+  float h = dot(mod(p,vec2(100.0)),vec2(127.1,311.7));
+  return -1.0 + 2.0*fract(sin(h)*43758.5453123);
+}
+
+float vnoise(in vec2 p) {
+  // genere une valeur random sur une position spécifique d'une grille
+  // pris sur shadertoy
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+
+  vec2 u = f*f*(3.0-2.0*f);
+
+  return mix( mix( hash( i + vec2(0.0,0.0) ),
+  hash( i + vec2(1.0,0.0) ), u.x),
+  mix( hash( i + vec2(0.0,1.0) ),
+  hash( i + vec2(1.0,1.0) ), u.x), u.y);
+}
+
+float fractalNoise(in vec2 p) {
+  const int nb = 5; // nb octave
+  float f = uFrequency; // frequency
+  float a = uAmplitude; // amplitude
+  float e = uPersistence; // persistence
+
+  float n = 0.0;
+  for(int i=0;i<nb;++i) {
+    n = n + a*vnoise(p*f);
+    f = 2.0*f;
+    a = a*e;
   }
+  return n;
+}
 
-  float vnoise(in vec2 p) {
-      // genere une valeur random sur une position spécifique d'une grille
-      // pris sur shadertoy
-      vec2 i = floor(p);
-      vec2 f = fract(p);
+void main(void) {
+  vec2 p = vTextureCoord*2.0-vec2(1.0); // coordonnees
+  float n = fractalNoise(p+uOffset)*0.5+0.5; // bruit
 
-      vec2 u = f*f*(3.0-2.0*f);
+  gl_FragColor = vec4(vec3(n),1.0);
 
-      return mix( mix( hash( i + vec2(0.0,0.0) ),
-                       hash( i + vec2(1.0,0.0) ), u.x),
-                  mix( hash( i + vec2(0.0,1.0) ),
-                       hash( i + vec2(1.0,1.0) ), u.x), u.y);
-  }
-
-  float fractalNoise(in vec2 p) {
-      const int nb = 5; // nb octave
-      float f = uFrequency; // frequency
-      float a = uAmplitude; // amplitude
-      float e = uPersistence; // persistence
-
-      float n = 0.0;
-      for(int i=0;i<nb;++i) {
-          n = n + a*vnoise(p*f);
-          f = 2.0*f;
-          a = a*e;
-      }
-      return n;
-  }
-
-  void main(void) {
-      vec2 p = vTextureCoord*2.0-vec2(1.0); // coordonnees
-      float n = fractalNoise(p+uOffset)*0.5+0.5; // bruit
-
-      gl_FragColor = vec4(vec3(n),1.0);
-
-  }
+}
 </script>
 
 <script id="background-vs" type="x-shader/x-vertex">
-    // *** le vertex shader ***
-    attribute vec3 aVertexPosition; // la position du sommet
-    attribute vec2 aVertexCoord; // sa coordonnee de texture
-    attribute vec2 aVertexNormal; // sa coordonnee de texture
+// *** le vertex shader ***
+attribute vec3 aVertexPosition; // la position du sommet
+attribute vec2 aVertexCoord; // sa coordonnee de texture
+attribute vec2 aVertexNormal; // sa coordonnee de texture
 
-    uniform mat4 uMVMatrix; // modelviewMatrix
-    uniform mat3 uNMatrix; // normalMatrix
-    uniform mat4 uPMatrix; // projectionMatrix
+uniform mat4 uMVMatrix; // modelviewMatrix
+uniform mat3 uNMatrix; // normalMatrix
+uniform mat4 uPMatrix; // projectionMatrix
 
-    varying vec2 vTextureCoord; // on souhaite rasteriser la coordonnee
-    varying vec3 vNormal; // on souhaite rasteriser la normale
-    varying vec4 vPosition; // on souhaite rasteriser la position
+varying vec2 vTextureCoord; // on souhaite rasteriser la coordonnee
+varying vec3 vNormal; // on souhaite rasteriser la normale
+varying vec4 vPosition; // on souhaite rasteriser la position
 
-    void main(void) {
-        // projection de la position
-        gl_Position = vec4(aVertexPosition, 1.0);
+void main(void) {
+  // projection de la position
+  gl_Position = vec4(aVertexPosition, 1.0);
 
-        //vPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
+  //vPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
 
-        //vNormal = uNMatrix * aVertexNormal;
+  //vNormal = uNMatrix * aVertexNormal;
 
-        // projection de la position
-      //  gl_Position = uPMatrix * vPosition;
+  // projection de la position
+  //  gl_Position = uPMatrix * vPosition;
 
-        // stockage de la coordonnee de texture
-        vTextureCoord = aVertexCoord;
-    }
+  // stockage de la coordonnee de texture
+  vTextureCoord = aVertexCoord;
+}
 </script>
 
 <script id="background-fs" type="x-shader/x-fragment">
-  // *** le fragment shader ***
-  precision highp float; // precision des nombres flottant
+// *** le fragment shader ***
+precision highp float; // precision des nombres flottant
 
-  uniform sampler2D uHeightfield; // la texture de hauteurs
-  uniform vec2 uTextureSize; // la taille de la texture
-  varying vec2 vTextureCoord; // recuperation de la coord rasterisee
-  varying vec3 vNormal; // recuperation de la normale rasterisee
-  varying vec4 vPosition; // recuperation de la position rasterisee
+uniform sampler2D uHeightfield; // la texture de hauteurs
+uniform vec2 uTextureSize; // la taille de la texture
+varying vec2 vTextureCoord; // recuperation de la coord rasterisee
+varying vec3 vNormal; // recuperation de la normale rasterisee
+varying vec4 vPosition; // recuperation de la position rasterisee
 
-  vec3 shade(in vec3 n,in float d) {
-      vec2 xy = vTextureCoord.xy*2.0-vec2(1.0);
-      vec3 v = -normalize(vec3(xy.x,xy.y,1.0)); // vecteur vue
-      vec3 l = normalize(vec3(-0.3,0.0,1.0)); // vecteur lumière (pourrait varier au cours du temps pour de meilleurs effets)
+vec3 shade(in vec3 n,in float d) {
+  vec2 xy = vTextureCoord.xy*2.0-vec2(1.0);
+  vec3 v = -normalize(vec3(xy.x,xy.y,1.0)); // vecteur vue
+  vec3 l = normalize(vec3(-0.3,0.0,1.0)); // vecteur lumière (pourrait varier au cours du temps pour de meilleurs effets)
 
-      // TODO : le shading !
-      // la fonction prend en entrée la normale du terrain et sa profondeur
+  // TODO : le shading !
+  // la fonction prend en entrée la normale du terrain et sa profondeur
 
-      return n;
-  }
+  return n;
+}
 
-  vec3 computeNormal() {
-      const float scale = 20.0;
+vec3 computeNormal() {
+  const float scale = 20.0;
 
-      vec2 ps = 1.0/uTextureSize;
-      float xp = texture2D(uHeightfield,vTextureCoord+vec2( ps.x,0.0)).x;
-      float xm = texture2D(uHeightfield,vTextureCoord+vec2(-ps.x,0.0)).x;
-      float yp = texture2D(uHeightfield,vTextureCoord+vec2(0.0, ps.y)).x;
-      float ym = texture2D(uHeightfield,vTextureCoord+vec2(0.0,-ps.y)).x;
+  vec2 ps = 1.0/uTextureSize;
+  float xp = texture2D(uHeightfield,vTextureCoord+vec2( ps.x,0.0)).x;
+  float xm = texture2D(uHeightfield,vTextureCoord+vec2(-ps.x,0.0)).x;
+  float yp = texture2D(uHeightfield,vTextureCoord+vec2(0.0, ps.y)).x;
+  float ym = texture2D(uHeightfield,vTextureCoord+vec2(0.0,-ps.y)).x;
 
-      float gx = 0.5*(xp-xm)*scale;
-      float gy = 0.5*(yp-ym)*scale;
+  float gx = 0.5*(xp-xm)*scale;
+  float gy = 0.5*(yp-ym)*scale;
 
-      vec3 v1 = normalize(vec3(1.0,0.0,gx));
-      vec3 v2 = normalize(vec3(0.0,1.0,gy));
-      //vec3 v1 = normalize(vec3(1.0,0.0,gx));
-      //vec3 v2 = normalize(vec3(0.0,1.0,gy));
+  vec3 v1 = normalize(vec3(1.0,0.0,gx));
+  vec3 v2 = normalize(vec3(0.0,1.0,gy));
+  //vec3 v1 = normalize(vec3(1.0,0.0,gx));
+  //vec3 v2 = normalize(vec3(0.0,1.0,gy));
 
-      return cross(v1,v2);
-  }
+  return cross(v1,v2);
+}
 
-  void main(void) {
+void main(void) {
 
-    vec3 n = normalize(vNormal);
-    vec3 v = normalize(vPosition.xyz);
-    vec3 l = normalize(vec3(0.0,0.0,1.0));
-    vec3 r = reflect(l,n);
+  vec3 n = normalize(vNormal);
+  vec3 v = normalize(vPosition.xyz);
+  vec3 l = normalize(vec3(0.0,0.0,1.0));
+  vec3 r = reflect(l,n);
 
-    float coefD = max(dot(n,l), 0.0);
-    float coefS = pow(max(dot(v,r), 0.0),20.0);
+  float coefD = max(dot(n,l), 0.0);
+  float coefS = pow(max(dot(v,r), 0.0),20.0);
 
-    vec3 Ka = vec3(0.1);
-    vec3 Kd = vec3(0.5, 0.5, 0.75);
-    vec3 Ks = vec3(1);
+  vec3 Ka = vec3(0.1);
+  vec3 Kd = vec3(0.5, 0.5, 0.75);
+  vec3 Ks = vec3(1);
 
-    vec3 c = Ka+Kd*coefD+Ks*coefS;
+  vec3 c = Ka+Kd*coefD+Ks*coefS;
 
-    float sd = texture2D(uHeightfield,vTextureCoord).x;
-    vec3 cn = computeNormal();
-    vec3 s = shade(cn,sd);
-    gl_FragColor = vec4(c,1.0);
+  float sd = texture2D(uHeightfield,vTextureCoord).x;
+  vec3 cn = computeNormal();
+  vec3 s = shade(cn,sd);
+  gl_FragColor = vec4(c,1.0);
 
-  }
+}
 </script>
 
 <script id="spaceship-vs" type="x-shader/x-vertex">
-    // *** le vertex shader ***
-    attribute vec3 aVertexPosition; // la position du sommet
-    attribute vec2 aVertexCoord; // sa coordonnee de texture
+// *** le vertex shader ***
+attribute vec3 aVertexPosition; // la position du sommet
+attribute vec2 aVertexCoord; // sa coordonnee de texture
 
-    uniform vec2 uPosition; // position du vaisseau
-    varying vec2 vTextureCoord; // on souhaite rasteriser la coordonnee
+uniform vec2 uPosition; // position du vaisseau
+varying vec2 vTextureCoord; // on souhaite rasteriser la coordonnee
 
-    void main(void) {
-        // projection de la position
-        gl_Position = vec4(aVertexPosition+vec3(uPosition,0.0), 1.0);
+void main(void) {
+  // projection de la position
+  gl_Position = vec4(aVertexPosition+vec3(uPosition,0.0), 1.0);
 
-        // stockage de la coordonnee de texture
-        vTextureCoord = aVertexCoord;
-    }
+  // stockage de la coordonnee de texture
+  vTextureCoord = aVertexCoord;
+}
 </script>
 <script id="spaceship-fs" type="x-shader/x-fragment">
+// *** le fragment shader ***
+precision highp float; // precision des nombres flottant
+
+varying vec2 vTextureCoord; // recuperation de la coord rasterisee
+
+uniform sampler2D uMaTexture; // la texture en entree
+
+void main(void) {
+  // couleur par defaut du vaisseau... a changer
+  //gl_FragColor = vec4(1.0,1.0,0.0,1.0);
+  gl_FragColor = texture2D(uMaTexture,vTextureCoord);
+
+}
+</script>
+
+<script id="laser-vs" type="x-shader/x-vertex">
+  // *** le vertex shader ***
+  attribute vec3 aVertexPosition; // la position du sommet
+  attribute vec2 aVertexCoord; // sa coordonnee de texture
+
+  uniform vec2 uPosition; // position du vaisseau
+  varying vec2 vTextureCoord; // on souhaite rasteriser la coordonnee
+
+  void main(void) {
+    // projection de la position
+    gl_Position = vec4(aVertexPosition+vec3(uPosition,0.0), 1.0);
+
+    // stockage de la coordonnee de texture
+    vTextureCoord = aVertexCoord;
+  }
+</script>
+<script id="laser-fs" type="x-shader/x-fragment">
   // *** le fragment shader ***
   precision highp float; // precision des nombres flottant
 
   varying vec2 vTextureCoord; // recuperation de la coord rasterisee
-
+  
   uniform sampler2D uMaTexture; // la texture en entree
 
   void main(void) {
-      // couleur par defaut du vaisseau... a changer
-      //gl_FragColor = vec4(1.0,1.0,0.0,1.0);
-      gl_FragColor = texture2D(uMaTexture,vTextureCoord);
-
+    gl_FragColor = texture2D(uMaTexture,vTextureCoord);
   }
 </script>
 
 <script type="text/javascript">
 
-    var fbo; // le FBO utilisé pour rendre la texture de hauteur
-    var heightfield; // l'objet heightfield, sa géométrie, son shader
-    var background; // l'objet background, sa géométrie, son shader
-    var spaceship; // l'objet spaceship, sa géométrie, son shader
+  var fbo; // le FBO utilisé pour rendre la texture de hauteur
+  var heightfield; // l'objet heightfield, sa géométrie, son shader
+  var background; // l'objet background, sa géométrie, son shader
+  var spaceship; // l'objet spaceship, sa géométrie, son shader
+  var lasers = [];
 
-    function drawScene() {
-        // initialisation du viewport
-        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+  function drawScene() {
+    // initialisation du viewport
+    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 
-        // efface les buffers de couleur et de profondeur
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // efface les buffers de couleur et de profondeur
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        // active le FBO (a partie de la, on dessine dans la texture associée)
-        gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.id());
+    // active le FBO (a partie de la, on dessine dans la texture associée)
+    gl.bindFramebuffer(gl.FRAMEBUFFER,fbo.id());
 
-        // dessin du heightfield
-        gl.useProgram(heightfield.shader());
-        heightfield.sendUniformVariables();
-        heightfield.draw();
+    // dessin du heightfield
+    gl.useProgram(heightfield.shader());
+    heightfield.sendUniformVariables();
+    heightfield.draw();
 
-        // desactivation du FBO (on dessine sur l'ecran maintenant)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    // desactivation du FBO (on dessine sur l'ecran maintenant)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-        // dessin du background (utilise la texture dessinée précédemment)
-        gl.useProgram(background.shader());
-        background.sendUniformVariables();
-        background.draw();
+    // dessin du background (utilise la texture dessinée précédemment)
+    gl.useProgram(background.shader());
+    background.sendUniformVariables();
+    background.draw();
 
-        // dessin du vaisseau (shader par defaut ici)
-        gl.useProgram(spaceship.shader());
-        spaceship.sendUniformVariables();
-        gl.activeTexture(gl.TEXTURE0); // on active l'unite de texture 0
-        gl.bindTexture(gl.TEXTURE_2D,maTexture); // on place maTexture dans l'unité active
-        gl.uniform1i(spaceshipShader.maTextureUniform, 0); // on dit au shader que maTextureUniform se trouve sur l'unite de texture 0
-        gl.clearColor(0, 0, 0, 0);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        gl.enable(gl.BLEND);
-        spaceship.draw();
+    // dessin du vaisseau (shader par defaut ici)
+    gl.useProgram(spaceship.shader());
+    spaceship.sendUniformVariables();
+    gl.activeTexture(gl.TEXTURE0); // on active l'unite de texture 0
+    gl.bindTexture(gl.TEXTURE_2D,maTexture); // on place maTexture dans l'unité active
+    gl.uniform1i(spaceshipShader.maTextureUniform, 0); // on dit au shader que maTextureUniform se trouve sur l'unite de texture 0
+    gl.clearColor(0, 0, 0, 0);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.enable(gl.BLEND);
+    spaceship.draw();
+
+    //dessin des ennemis
+
+    //dessins des bonus
+
+    //Dession des lasers
+    if(lasers.length != 0){
+      gl.useProgram(lasers[0].shader());
+      for(i=0;i<lasers.length;i++){
+        lasers[i].sendUniformVariables();
+        gl.activeTexture(gl.TEXTURE0); // Activation de l'unite de texture 0
+        gl.bindTexture(gl.TEXTURE_2D,laserTexture); // on place maTexture dans l'unité active
+        gl.uniform1i(lasers[i].shader().maTextureUniform, 0); // on dit au shader que maTextureUniform se trouve sur l'unite de texture 0
+        lasers[i].draw();
+      }
+    }
+  }
+
+  // une bonne manière de gerer les evenements claviers
+  // permet d'avoir plusieurs touches appuyées simultanément
+  var currentlyPressedKeys = {};
+
+  function handleKeyDown(event) {
+    currentlyPressedKeys[event.keyCode] = true;
+  }
+
+
+  function handleKeyUp(event) {
+    currentlyPressedKeys[event.keyCode] = false;
+  }
+
+  function handleKeys() {
+    if (currentlyPressedKeys[81]) { // left arrow
+      var newx = spaceship.getPosition()[0]-vitesseHorizontale;
+      newx = (newx < (-1.0+spaceship.getWidth()/2))? (-1.0+spaceship.getWidth()/2) : newx;
+      spaceship.setPosition(newx,spaceship.getPosition()[1]);
+    }  else if (currentlyPressedKeys[68]) { // right arrow
+      var newx = spaceship.getPosition()[0]+vitesseHorizontale;
+      newx = (newx > (1.0-spaceship.getWidth()/2))? (1.0-spaceship.getWidth()/2) : newx;
+      spaceship.setPosition(newx,spaceship.getPosition()[1]);
+    } else if (currentlyPressedKeys[90]){ // up arrow
+      var newy = spaceship.getPosition()[1]+vitesseVerticale;
+      newy = (newy > (1.0-spaceship.getHeight()/2))? (1.0-spaceship.getHeight()/2) : newy;
+      spaceship.setPosition(spaceship.getPosition()[0],newy);
+    } else if (currentlyPressedKeys[83])  { // down arrow
+      var newy = spaceship.getPosition()[1]-vitesseVerticale;
+      newy = (newy < (-1.0+spaceship.getHeight()/2))? (-1.0+spaceship.getHeight()/2) : newy;
+      spaceship.setPosition(spaceship.getPosition()[0],newy);
     }
 
-    // une bonne manière de gerer les evenements claviers
-    // permet d'avoir plusieurs touches appuyées simultanémen
-    var currentlyPressedKeys = {};
+    if(currentlyPressedKeys[32]) // space
+    {
+      // ajouter laser
+      console.log('shoot');
+      addLasers(1);
+    }
+  }
+  function mouseMove(event) {
+    // controle de la position du vaisseau en fonction de la souris
+    // la position est remappée entre -1 et 1 pour cela
+    var newx = 2.0*(event.clientX/gl.viewportWidth)-1.0;
+    var newy = -(2.0*(event.clientY/gl.viewportHeight)-1.0);
+    //spaceship.setPosition(newx,newy);
+  }
 
-    function handleKeyDown(event) {
-        currentlyPressedKeys[event.keyCode] = true;
+  function mouseDown(event) {
+  }
+
+  function handleLoadedTexture(texture) {
+    // active la texture (les operations qui suivent feront effet sur celle-ci)
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+    // envoie les donnees sur GPU
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+
+    gl.generateMipmap(gl.TEXTURE_2D);
+
+    // options (filtrage+effets de bordure)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    // Texture moin nette avec LINEAR, LINEAR_MIPMAP_LINEAR
+    // Diffrénce NEAREST_MIPMAP_LINEAR & LINEAR_MIPMAP_NEAREST
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    // desactive la texture courante
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+
+  var maTexture;
+  var laserTexture;
+  //Chargement des textures
+  function initTexture() {
+    // creation de la texture
+    maTexture = gl.createTexture();
+    maTexture.image = new Image();
+    maTexture.image.onload = function () {
+      handleLoadedTexture(maTexture)
+    }
+    maTexture.image.src = "img/t65.png";
+
+    laserTexture = gl.createTexture();
+    laserTexture.image = new Image();
+    laserTexture.image.onload = function () {
+      handleLoadedTexture(laserTexture)
+    }
+    laserTexture.image.src = "img/laser.png";
+  }
+
+  // animation
+  var lastTime = 0;
+  function animate() {
+    var timeNow = new Date().getTime();
+    if (lastTime != 0) {
+      // chaque objet est susceptible de s'animer
+      var elapsed = timeNow - lastTime;
+      heightfield.setParameters(elapsed);
+      spaceship.setParameters(elapsed);
+      background.setParameters(elapsed);
+      for(i=0;i<lasers.length;i++){
+        lasers[i].setParameters(elapsed);
+      }
+    }
+    lastTime = timeNow;
+  }
+  function update() {
+    //gestion de la sortie des lasers de l'écran
+    for(i=0;i<lasers.length;i++){
+      if(lasers[i].position[1] > 1){
+        lasers.splice(i,1);
+      }
+    }
+  }
+
+  function tick() {
+    requestAnimFrame(tick);
+    handleKeys();
+    drawScene();
+    animate();
+    update();
+  }
+
+
+  function webGLStart() {
+
+    //Init variable globale
+    vitesseVerticale = 0.02;
+    vitesseHorizontale = 0.02;
+    CPM = 400; // coup par minute
+    timeElapsedSinceLastFire = new Date().getTime(); // Initialisation
+
+    // initialisation du canvas et des objets OpenGL
+    var canvas = document.getElementById("SpaceShip");
+    initGL(canvas);
+    initTexture();
+
+    // init FBO
+    fbo = new FBO(canvas.width,canvas.height,1,false);
+
+    // init de tous les shaders
+    initHeightfieldShader();
+    initBackgroundShader();
+    initSpaceshipShader();
+    initLaserShader();
+
+    // init de tous les objets
+    heightfield = new Heightfield();
+    background = new Background(fbo.texture(0));
+    spaceship = new Spaceship();
+
+    // la couleur de fond sera noire
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+    // active le teste de profondeur
+    gl.enable(gl.DEPTH_TEST);
+
+    /* Mouse and keyboard interaction functions */
+    canvas.addEventListener('mousedown', mouseDown, true);
+    canvas.addEventListener('mousemove', mouseMove, true);
+
+    document.onkeydown = handleKeyDown;
+    document.onkeyup = handleKeyUp;
+
+    // dessine la scene
+    tick();
+  }
+
+  function addLasers(nbLasers) {
+    nbLasers = 1;
+    var timeNow = new Date().getTime();
+    var elapsed = timeNow - timeElapsedSinceLastFire;
+    if(elapsed > 1/(CPM/60)*1000)
+    {
+      var position = spaceship.getPosition();
+      var laser = new Laser();
+      laser.setPosition(position[0],position[1]);
+      lasers.push(laser);
+      timeElapsedSinceLastFire = timeNow;
     }
 
-
-    function handleKeyUp(event) {
-        currentlyPressedKeys[event.keyCode] = false;
-    }
-
-    function handleKeys() {
-        if (currentlyPressedKeys[37]) { // left arrow
-            var newx = spaceship.getPosition()[0]-vitesseHorizontale;
-            newx = (newx < (-1.0+spaceship.getWidth()/2))? (-1.0+spaceship.getWidth()/2) : newx;
-            spaceship.setPosition(newx,spaceship.getPosition()[1]);
-        }  else if (currentlyPressedKeys[39]) { // right arrow
-            var newx = spaceship.getPosition()[0]+vitesseHorizontale;
-            newx = (newx > (1.0-spaceship.getWidth()/2))? (1.0-spaceship.getWidth()/2) : newx;
-            spaceship.setPosition(newx,spaceship.getPosition()[1]);
-        } else if (currentlyPressedKeys[38]){ // up arrow
-            var newy = spaceship.getPosition()[1]+vitesseVerticale;
-            newy = (newy > (1.0-spaceship.getHeight()/2))? (1.0-spaceship.getHeight()/2) : newy;
-            spaceship.setPosition(spaceship.getPosition()[0],newy);
-        } else if (currentlyPressedKeys[40])  { // down arrow
-            var newy = spaceship.getPosition()[1]-vitesseVerticale;
-            newy = (newy < (-1.0+spaceship.getHeight()/2))? (-1.0+spaceship.getHeight()/2) : newy;
-            spaceship.setPosition(spaceship.getPosition()[0],newy);
-        }
-
-        if(currentlyPressedKeys[32]) // space
-        {
-          // ajouter laser
-          console.log('shoot');
-        }
-    }
-
-    function mouseMove(event) {
-        // controle de la position du vaisseau en fonction de la souris
-        // la position est remappée entre -1 et 1 pour cela
-        /*var newx = 2.0*(event.clientX/gl.viewportWidth)-1.0;
-        var newy = -(2.0*(event.clientY/gl.viewportHeight)-1.0);
-        spaceship.setPosition(newx,newy);*/
-    }
-
-    function mouseDown(event) {
-    }
-
-    function handleLoadedTexture(texture) {
-      // active la texture (les operations qui suivent feront effet sur celle-ci)
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-
-      // envoie les donnees sur GPU
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
-
-      gl.generateMipmap(gl.TEXTURE_2D);
-
-      // options (filtrage+effets de bordure)
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-      // Texture moin nette avec LINEAR, LINEAR_MIPMAP_LINEAR
-      // Diffrénce NEAREST_MIPMAP_LINEAR & LINEAR_MIPMAP_NEAREST
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-      // desactive la texture courante
-      gl.bindTexture(gl.TEXTURE_2D, null);
-    }
-
-    var maTexture;
-
-    function initTexture() {
-        // creation de la texture
-        maTexture = gl.createTexture();
-        maTexture.image = new Image();
-        maTexture.image.onload = function () {
-            handleLoadedTexture(maTexture)
-        }
-        maTexture.image.src = "t65.png";
-    }
-
-    // animation
-    var lastTime = 0;
-    function animate() {
-        var timeNow = new Date().getTime();
-        if (lastTime != 0) {
-            // chaque objet est susceptible de s'animer
-            var elapsed = timeNow - lastTime;
-            heightfield.setParameters(elapsed);
-            spaceship.setParameters(elapsed);
-            background.setParameters(elapsed);
-        }
-        lastTime = timeNow;
-    }
-
-    function tick() {
-        requestAnimFrame(tick);
-        handleKeys();
-        drawScene();
-        animate();
-    }
-
-
-    function webGLStart() {
-
-        //Init variable globale
-        vitesseVerticale = 0.02;
-        vitesseHorizontale = 0.02;
-
-        // initialisation du canvas et des objets OpenGL
-        var canvas = document.getElementById("SpaceShip");
-        initGL(canvas);
-        initTexture();
-
-        // init FBO
-        fbo = new FBO(canvas.width,canvas.height,1,false);
-
-        // init de tous les shaders
-        initHeightfieldShader();
-        initBackgroundShader();
-        initSpaceshipShader();
-
-        // init de tous les objets
-        heightfield = new Heightfield();
-        background = new Background(fbo.texture(0));
-        spaceship = new Spaceship();
-
-        // la couleur de fond sera noire
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-        // active le teste de profondeur
-        gl.enable(gl.DEPTH_TEST);
-
-        /* Mouse and keyboard interaction functions */
-        canvas.addEventListener('mousedown', mouseDown, true);
-        canvas.addEventListener('mousemove', mouseMove, true);
-
-        document.onkeydown = handleKeyDown;
-        document.onkeyup = handleKeyUp;
-
-        // dessine la scene
-        tick();
-    }
-
+  }
 
 </script>
 
@@ -405,5 +489,5 @@
 
 
 <body onload="webGLStart();">
-    <canvas id="SpaceShip" style="border: none;" width="800" height="800"></canvas>
+  <canvas id="SpaceShip" style="border: none;" width="800" height="800"></canvas>
 </body></html>
