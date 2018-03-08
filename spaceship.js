@@ -95,6 +95,19 @@ Spaceship.prototype.getHeight = function() {
     return this.height;
 }
 
+Spaceship.prototype.getCanonPosition = function() {
+	return [
+		{
+			x: this.position[0] - this.width / 2.8,
+            y: this.position[1] + this.height / 2
+		},
+		{
+            x: this.position[0] + this.width / 2.8,
+            y: this.position[1] + this.height / 2
+		}
+	]
+}
+
 Spaceship.prototype.shader = function() {
 	return spaceshipShader;
 }
