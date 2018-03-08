@@ -3,6 +3,8 @@
     <title>SpaceShip</title>
     <meta http-equiv="content-type" content="text/html; charset=windows-1252">
 
+     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
+
     <script type="text/javascript" src="gl-matrix.js"></script>
     <script type="text/javascript" src="webgl-utils.js"></script>
     <script type="text/javascript" src="game-utils.js"></script>
@@ -47,7 +49,7 @@ float hash(vec2 p) {
 }
 
 float vnoise(in vec2 p) {
-  // genere une valeur random sur une position spécifique d'une grille
+  // genere une valeur random sur une position spï¿½cifique d'une grille
   // pris sur shadertoy
   vec2 i = floor(p);
   vec2 f = fract(p);
@@ -129,10 +131,10 @@ varying vec4 vPosition; // recuperation de la position rasterisee
 vec3 shade(in vec3 n,in float d) {
   vec2 xy = vTextureCoord.xy*2.0-vec2(1.0);
   vec3 v = -normalize(vec3(xy.x,xy.y,1.0)); // vecteur vue
-  vec3 l = normalize(vec3(-0.3,0.0,1.0)); // vecteur lumière (pourrait varier au cours du temps pour de meilleurs effets)
+  vec3 l = normalize(vec3(-0.3,0.0,1.0)); // vecteur lumiï¿½re (pourrait varier au cours du temps pour de meilleurs effets)
 
   // TODO : le shading !
-  // la fonction prend en entrée la normale du terrain et sa profondeur
+  // la fonction prend en entrï¿½e la normale du terrain et sa profondeur
 
   return n;
 }
@@ -238,7 +240,7 @@ void main(void) {
   precision highp float; // precision des nombres flottant
 
   varying vec2 vTextureCoord; // recuperation de la coord rasterisee
-  
+
   uniform sampler2D uMaTexture; // la texture en entree
 
   void main(void) {
@@ -249,10 +251,10 @@ void main(void) {
 
     <script type="text/javascript">
 
-        var fbo; // le FBO utilisé pour rendre la texture de hauteur
-        var heightfield; // l'objet heightfield, sa géométrie, son shader
-        var background; // l'objet background, sa géométrie, son shader
-        var spaceship; // l'objet spaceship, sa géométrie, son shader
+        var fbo; // le FBO utilisï¿½ pour rendre la texture de hauteur
+        var heightfield; // l'objet heightfield, sa gï¿½omï¿½trie, son shader
+        var background; // l'objet background, sa gï¿½omï¿½trie, son shader
+        var spaceship; // l'objet spaceship, sa gï¿½omï¿½trie, son shader
         var lasers = [];
 
         function drawScene() {
@@ -262,7 +264,7 @@ void main(void) {
             // efface les buffers de couleur et de profondeur
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-            // active le FBO (a partie de la, on dessine dans la texture associée)
+            // active le FBO (a partie de la, on dessine dans la texture associï¿½e)
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.id());
 
             // dessin du heightfield
@@ -273,7 +275,7 @@ void main(void) {
             // desactivation du FBO (on dessine sur l'ecran maintenant)
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-            // dessin du background (utilise la texture dessinée précédemment)
+            // dessin du background (utilise la texture dessinï¿½e prï¿½cï¿½demment)
             gl.useProgram(background.shader());
             background.sendUniformVariables();
             background.draw();
@@ -282,7 +284,7 @@ void main(void) {
             gl.useProgram(spaceship.shader());
             spaceship.sendUniformVariables();
             gl.activeTexture(gl.TEXTURE0); // on active l'unite de texture 0
-            gl.bindTexture(gl.TEXTURE_2D, maTexture); // on place maTexture dans l'unité active
+            gl.bindTexture(gl.TEXTURE_2D, maTexture); // on place maTexture dans l'unitï¿½ active
             gl.uniform1i(spaceshipShader.maTextureUniform, 0); // on dit au shader que maTextureUniform se trouve sur l'unite de texture 0
             gl.clearColor(0, 0, 0, 0);
             /*    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -299,15 +301,15 @@ void main(void) {
                 for (var i = 0; i < lasers.length; i++) {
                     lasers[i].sendUniformVariables();
                     gl.activeTexture(gl.TEXTURE0); // Activation de l'unite de texture 0
-                    gl.bindTexture(gl.TEXTURE_2D, laserTexture); // on place maTexture dans l'unité active
+                    gl.bindTexture(gl.TEXTURE_2D, laserTexture); // on place maTexture dans l'unitï¿½ active
                     gl.uniform1i(LaserShader.maTextureUniform, 0); // on dit au shader que maTextureUniform se trouve sur l'unite de texture 0
                     lasers[i].draw();
                 }
             }
         }
 
-        // une bonne manière de gerer les evenements claviers
-        // permet d'avoir plusieurs touches appuyées simultanément
+        // une bonne maniï¿½re de gerer les evenements claviers
+        // permet d'avoir plusieurs touches appuyï¿½es simultanï¿½ment
         var currentlyPressedKeys = {};
 
         function handleKeyDown(event) {
@@ -348,7 +350,7 @@ void main(void) {
 
         function mouseMove(event) {
             // controle de la position du vaisseau en fonction de la souris
-            // la position est remappée entre -1 et 1 pour cela
+            // la position est remappï¿½e entre -1 et 1 pour cela
             var newx = 2.0 * (event.clientX / gl.viewportWidth) - 1.0;
             var newy = -(2.0 * (event.clientY / gl.viewportHeight) - 1.0);
             //spaceship.setPosition(newx,newy);
@@ -371,7 +373,7 @@ void main(void) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             // Texture moin nette avec LINEAR, LINEAR_MIPMAP_LINEAR
-            // Diffrénce NEAREST_MIPMAP_LINEAR & LINEAR_MIPMAP_NEAREST
+            // Diffrï¿½nce NEAREST_MIPMAP_LINEAR & LINEAR_MIPMAP_NEAREST
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
@@ -419,7 +421,7 @@ void main(void) {
         }
 
         function update() {
-            //gestion de la sortie des lasers de l'écran
+            //gestion de la sortie des lasers de l'ï¿½cran
             for (var i = 0; i < lasers.length; i++) {
                 if (lasers[i].position[1] >= 1) {
                     lasers.splice(i, 1);
@@ -503,11 +505,39 @@ void main(void) {
 
     </script>
 
-
 </head>
 
 
 <body onload="webGLStart();">
-<canvas id="SpaceShip" style="border: none;" width="800" height="800"></canvas>
+  <div class="main">
+  <div class="canvas">
+    <canvas id="SpaceShip" style="border: none;" width="800" height="800"></canvas>
+  </div>
+
+<div id="dashboard">
+      <img src="img/banniere.jpg"/>
+      <nav>
+          <div class="btn-logic">
+              <button type="button" onclick="start()" id="startBut">Start</button>
+              <button style="display: none" type="button" onclick="stop()" id="stopBut">Stop</button>
+              <button  style="display: none" type="button" onclick="reset()" id="resetBut">Reset</button>
+          </div>
+          <div class="data">
+                  <p id="level">Level : </p>
+                  <p id="score">Score : </p>
+          </div>
+          <div class="commandes">
+              <img src="img/yoda.png"/>
+              <h2>Commandes</h2>
+              <p>Mouvements = PAD directionnel</p>
+              <p>Tirs = Espace </p>
+          </div>
+      </nav>
+  </div>
+  <div id="end">
+      <img src="img/end.png">
+  </div>
+</div>
+</div>
 </body>
 </html>
