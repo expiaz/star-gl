@@ -1,6 +1,18 @@
+html{
+  width: 1200px;
+height: 800px;
+}
+
+body{
+/*  background-image: url("../../img/borne.jpg");
+  background-repeat: no-repeat;*/
+
+}
 .main {
     display: flex;
     flex-direction: row;
+    width: 110%;
+    margin-left: 280px;
 }
 
 #dashboard {
@@ -8,6 +20,7 @@
     flex-direction: column;
     justify-content: center;
     background: #83857c;
+    background-image: url("../../img/espace.png");
     width:800px;
     height: 800px;
 
@@ -56,8 +69,7 @@ button:hover {
      background-color: #212121;
  }
 
-button:focus,
-button:active {
+button:focus,button:active {
     outline: none;
 }
 
@@ -86,5 +98,5 @@ button:active {
 }
 
 .commandes img{
-    width:100px !important;
+    width:200px !important;
 }
