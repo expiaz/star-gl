@@ -21,14 +21,45 @@
         function webGLStart() {
             const canvas = document.getElementById("SpaceShip");
             const game = new Game(canvas);
-            game.start();
             window.game = game;
+            game.start();
         }
 
     </script>
 </head>
 <body onload="webGLStart();">
-    <canvas id="SpaceShip" style="border: none;" width="800" height="800"></canvas>
-    <button onclick="game.pause()">Pause</button>
+<div class="main">
+    <div class="canvas">
+        <canvas id="SpaceShip" style="border: none;" width="800" height="800"></canvas>
+    </div>
+
+    <p>Pause : p, tirer : espace</p>
+
+    <!--<div id="dashboard">
+        <img src="img/banniere.jpg"/>
+        <nav>
+            <div class="btn-logic">
+                <button type="button" onclick="game.start()">Start</button>
+                <button type="button" onclick="game.pause()">Pause</button>
+                <button style="display: none" type="button">Stop</button>
+                <button style="display: none" type="button">Reset</button>
+            </div>
+            <div class="data">
+                <p id="level">Level : </p>
+                <p id="score">Score : </p>
+            </div>
+            <div class="commandes">
+                <img src="img/yoda.png"/>
+                <h2>Commandes</h2>
+                <p>Mouvements = ZQSD</p>
+                <p>Tirs = Espace</p>
+                <p>Pause = p</p>
+            </div>
+        </nav>
+    </div>
+    <div id="end">
+        <img src="img/end.png">
+    </div>-->
+</div>
 </body>
 </html>
