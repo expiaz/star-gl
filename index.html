@@ -1,0 +1,34 @@
+<html>
+<head>
+    <title>SpaceShip</title>
+    <meta http-equiv="content-type" content="text/html; charset=windows-1252">
+
+    <script type="text/javascript" src="gl-matrix.js"></script>
+    <script type="text/javascript" src="fbo.js"></script>
+    <script type="text/javascript" src="Utils.js"></script>
+    <script type="text/javascript" src="models/Game.js"></script>
+    <script type="text/javascript" src="models/World.js"></script>
+    <script type="text/javascript" src="models/Heightfield.js"></script>
+    <script type="text/javascript" src="models/Background.js"></script>
+    <script type="text/javascript" src="models/Actor.js"></script>
+    <script type="text/javascript" src="models/Spaceship.js"></script>
+    <script type="text/javascript" src="models/Enemy.js"></script>
+    <script type="text/javascript" src="models/Laser.js"></script>
+    <script type="text/javascript" src="models/EnemyLaser.js"></script>
+
+    <script type="text/javascript">
+
+        function webGLStart() {
+            const canvas = document.getElementById("SpaceShip");
+            const game = new Game(canvas);
+            game.start();
+            window.game = game;
+        }
+
+    </script>
+</head>
+<body onload="webGLStart();">
+    <canvas id="SpaceShip" style="border: none;" width="800" height="800"></canvas>
+    <button onclick="game.pause()">Pause</button>
+</body>
+</html>
