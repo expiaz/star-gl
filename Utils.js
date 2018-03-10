@@ -56,10 +56,17 @@ Utils.initShaders = function (vs, fs) {
 
 /**
  *
- * @param image
- * @return {WebGLTexture}
+ * @param {Array<String>} textures
+ * @return {Promise<WebGLTexture>}
  */
-Utils.initTexture = function (image) {
+Utils.loadTextures = textures => Promise.all(textures.map(t => Utils.initTexture(t)));
+
+/**
+ *
+ * @param {String} image
+ * @return {Promise<WebGLTexture>}
+ */
+Utils.initTexture = image => new Promise(resolve => {
     const texture = gl.createTexture();
     texture.image = new Image();
     texture.image.addEventListener('load', function () {
@@ -71,10 +78,10 @@ Utils.initTexture = function (image) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.bindTexture(gl.TEXTURE_2D, null);
+        resolve(texture);
     });
     texture.image.src = image;
-    return texture;
-};
+});
 
 window.requestAnimationFrame =
     window.requestAnimationFrame ||

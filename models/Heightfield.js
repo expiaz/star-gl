@@ -48,7 +48,7 @@ class Heightfield {
         return Heightfield.shader;
     }
 
-    update(elapsed, keys) {
+    update(elapsed, keys, globals) {
         this.timer = this.timer+elapsed*0.0004;
         var speed = 2.0*(Math.sin(this.timer*0.1)*0.5+0.5);
         this.offset[1] = this.offset[1]+elapsed*0.0004*speed;
@@ -75,7 +75,7 @@ class Heightfield {
     draw() {
         const shader = this.shader();
 
-        gl.useProgram(shader);
+        // gl.useProgram(shader);
 
         this.sendUniforms(shader);
         this.sendAttributes(shader);

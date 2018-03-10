@@ -13,13 +13,27 @@ class Laser extends Actor {
         return Laser.texture;
     }
 
-    /**
-     *
-     * @param {Number} elapsed
-     * @param {Object} keys
-     * @return {Boolean} should render
-     */
-    update(elapsed, keys) {
+    update(elapsed, keys, globals) {
+        if (super.update(elapsed, keys, globals)) {
+            return true;
+        }
+
+        for(var i = 0; i < globals.enemies.length; i++) {
+            if (this.cross(globals.enemies[i])) {
+                globals.enemies[i].die();
+                this.die();
+                return true;
+            }
+        }
+
+        for(var i = 0; i < globals.enemyLasers.length; i++) {
+            if (this.cross(globals.enemyLasers[i])) {
+                globals.enemyLasers[i].die();
+                this.die();
+                return true;
+            }
+        }
+
         this.y += elapsed / this.velocity;
         return this.y >= World.MAX_Y;
     }
@@ -28,9 +42,9 @@ class Laser extends Actor {
 
 Laser.z = -0.8;
 
-Laser.init = function () {
+Laser.init = function (textures) {
 
-    Laser.texture = Utils.initTexture('img/laser.png');
+    Laser.texture = textures[2];
 
     Laser.shader = Actor.initShaders(`
         // *** le vertex shader ***

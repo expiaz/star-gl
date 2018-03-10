@@ -19,7 +19,7 @@ class Background {
         this.vertexBuffer.numItems = 4;
 
         // meme principe pour les normals
-        this.normalBuffer = gl.createBuffer();
+        /*this.normalBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
         var normals = [
             0.0, 0.0,
@@ -29,7 +29,7 @@ class Background {
         ];
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
         this.normalBuffer.itemSize = 2;
-        this.normalBuffer.numItems = 4;
+        this.normalBuffer.numItems = 4;*/
 
         // meme principe pour les couleurs
         this.coordBuffer = gl.createBuffer();
@@ -85,8 +85,8 @@ class Background {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.vertexAttribPointer(shader.vertexPositionAttribute, this.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
         // active le buffer de couleurs et fait le lien avec l'attribut aVertexColor dans le shader
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
-        gl.vertexAttribPointer(shader.vertexNormalAttribute, this.normalBuffer.itemSize, gl.FLOAT, true, 0, 0);
+        /*gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
+        gl.vertexAttribPointer(shader.vertexNormalAttribute, this.normalBuffer.itemSize, gl.FLOAT, true, 0, 0);*/
         // active le buffer de coords
         gl.bindBuffer(gl.ARRAY_BUFFER, this.coordBuffer);
         gl.vertexAttribPointer(shader.textureCoordAttribute, this.coordBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -96,7 +96,7 @@ class Background {
         const shader = this.shader();
         const texture = this.texture();
 
-        gl.useProgram(shader);
+        // gl.useProgram(shader);
 
         this.sendUniforms(shader);
         this.sendTexture(shader, texture);
@@ -211,8 +211,8 @@ Background.init = function () {
     backgroundShader.textureCoordAttribute = gl.getAttribLocation(backgroundShader, "aTextureCoord");
     gl.enableVertexAttribArray(backgroundShader.textureCoordAttribute);
 
-    backgroundShader.vertexNormalAttribute = gl.getAttribLocation(backgroundShader, "aVertexNormal");
-    gl.enableVertexAttribArray(backgroundShader.vertexNormalAttribute);
+    /*backgroundShader.vertexNormalAttribute = gl.getAttribLocation(backgroundShader, "aVertexNormal");
+    gl.enableVertexAttribArray(backgroundShader.vertexNormalAttribute);*/
 
     // adresse de la texture uHeightfield dans le shader
     backgroundShader.heightfieldUniform = gl.getUniformLocation(backgroundShader, "uHeightfield");

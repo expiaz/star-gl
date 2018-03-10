@@ -10,6 +10,9 @@ class Actor {
         this.y = y;
         this.width = width;
         this.height = height;
+        this.dead = false;
+
+        this._updateHibox();
 
         // cree un nouveau buffer sur le GPU et l'active
         this.vertexBuffer = gl.createBuffer();
@@ -18,11 +21,17 @@ class Actor {
         const wo2 = 0.5 * this.width;
         const ho2 = 0.5 * this.height;
         const vertices = [
-            -wo2, -ho2, z,
-            wo2, -ho2, z,
-            wo2, ho2, z,
-            -wo2, ho2, z
+            -wo2, -ho2, z, // bas gauche
+            wo2, -ho2, z, // bas droite
+            wo2, ho2, z, // haut droite
+            -wo2, ho2, z // haut gauche
         ];
+        /*this.vertices = {
+            00: [vertices[0], vertices[1]],
+            10: [vertices[3], vertices[4]],
+            11: [vertices[6], vertices[7]],
+            01: [vertices[9], vertices[10]]
+        };*/
         // on envoie ces positions au GPU ici (et on se rappelle de leur nombre/taille)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
         this.vertexBuffer.itemSize = 3;
@@ -52,6 +61,15 @@ class Actor {
         this.triangles.numItems = 6;
     }
 
+    _updateHibox() {
+        this._hitbox = {
+            x: this.x + this.width / 2 - this.height / 2,
+            y: this.y + this.width / 2 - this.height / 2,
+            width: this.width,
+            height: this.height
+        };
+    }
+
     shader() {
         return Actor.shader;
     }
@@ -60,23 +78,30 @@ class Actor {
         return Actor.texture;
     }
 
+    die() {
+        this.dead = true;
+    }
+
     /**
      *
      * @param {Number} elapsed
      * @param {Object} keys
+     * @param {Game} globals
      * @return {Boolean} is out of bounds or not
      */
-    update(elapsed, keys) {
-        return false;
+    update(elapsed, keys, globals) {
+        this._updateHibox();
+        return this.dead;
     }
 
     hitbox() {
-        return {
+        return this._hitbox;
+        /*{
             right: this.x - this.width/2,
             left: this.x + this.width/2,
             top: this.y + this.height/2,
             bottom: this.y - this.height/2
-        };
+        };*/
     }
 
     bounds() {
@@ -108,11 +133,17 @@ class Actor {
         gl.vertexAttribPointer(shader.textureCoordAttribute, this.coordBuffer.itemSize, gl.FLOAT, false, 0, 0);
     }
 
+    cross (other) {
+        const hitbox = this.hitbox(), oHitbox = other.hitbox();
+        return oHitbox.x < hitbox.x + hitbox.width &&
+            oHitbox.x + oHitbox.width > hitbox.x &&
+            oHitbox.y < hitbox.y + hitbox.height &&
+            oHitbox.height + oHitbox.y > hitbox.y;
+    }
+
     draw() {
         const shader = this.shader();
         const texture = this.texture();
-
-        gl.useProgram(shader);
 
         this.sendUniforms(shader);
         this.sendTexture(shader, texture);

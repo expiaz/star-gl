@@ -3,12 +3,11 @@ class Spaceship extends Actor {
     constructor(x, y) {
         super(0.2, 0.2, x, y, Spaceship.z);
         this.timeElapsedSinceLastFire = +Date.now()
-        this.fireRate = 7;
+        this.fireRate = 4;
         this.verticalSpeed = 0.02;
         this.horizontalSpeed = 0.02;
         this.fireSpeed = 500;
-
-        this.lasers = [];
+        this.life = 3;
     }
 
     /**
@@ -27,9 +26,14 @@ class Spaceship extends Actor {
      *
      * @param {Number} elapsed
      * @param {Object} keys
+     * @param {Game} globals
      * @return {Boolean} is out of bounds or not
      */
-    update(elapsed, keys) {
+    update(elapsed, keys, globals) {
+        if (super.update(elapsed, keys, globals)) {
+            return true;
+        }
+
         const bounds = this.bounds();
 
         if (keys[81]) { // left arrow
@@ -62,28 +66,32 @@ class Spaceship extends Actor {
         }
 
         if (keys[32]) { // space
-            this.fire();
+            this.fire(globals.lasers);
         }
 
-        this.lasers = this.lasers.filter(laser => !laser.update(elapsed, keys));
+        // this.lasers = this.lasers.filter(laser => !laser.update(elapsed, keys));
 
-        return false;
+        return this.life > 0;
     }
 
-    draw() {
+    /*draw() {
         super.draw();
         if (this.lasers.length) {
             this.lasers.forEach(laser => laser.draw());
         }
-    }
+    }*/
 
-    fire() {
+    /**
+     *
+     * @param {Array<Laser>} lasers
+     */
+    fire(lasers) {
         const now = +Date.now()
         const elapsed = now - this.timeElapsedSinceLastFire;
         if (elapsed > 1 / this.fireRate * 1000) {
             this.timeElapsedSinceLastFire = now;
-            this.lasers.push(new Laser(this.x - this.width / 2.8, this.y + this.height / 2, this.fireSpeed));
-            this.lasers.push(new Laser(this.x + this.width / 2.8, this.y + this.height / 2, this.fireSpeed));
+            lasers.push(new Laser(this.x - this.width / 2.8, this.y + this.height / 2, this.fireSpeed));
+            lasers.push(new Laser(this.x + this.width / 2.8, this.y + this.height / 2, this.fireSpeed));
         }
     }
 
@@ -91,9 +99,9 @@ class Spaceship extends Actor {
 
 Spaceship.z = -0.6;
 
-Spaceship.init = function () {
+Spaceship.init = function (textures) {
 
-    Spaceship.texture = Utils.initTexture('img/t65.png');
+    Spaceship.texture = textures[0];
 
     Spaceship.shader = Actor.initShaders(`
         // *** le vertex shader ***
@@ -105,7 +113,7 @@ Spaceship.init = function () {
     
         void main(void) {
           // projection de la position
-          gl_Position = vec4(aVertexPosition+vec3(uPosition,0.0), 1.0);
+          gl_Position = vec4(aVertexPosition + vec3(uPosition,0.0), 1.0);
     
           // stockage de la coordonnee de texture
           vTextureCoord = aTextureCoord;

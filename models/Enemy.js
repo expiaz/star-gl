@@ -1,13 +1,18 @@
 class Enemy extends Actor {
 
-    constructor(x, y) {
+    constructor(x, y, intervalX) {
         super(0.1, 0.1, x, y, Enemy.z);
         this.timeElapsedSinceLastFire = +Date.now()
         this.speed = 1500;
-        this.fireRate = 1;
-        this.fireSpeed = 1000;
+        this.fireRate = 2;
+        this.fireSpeed = 700;
 
-        this.lasers = [];
+        this.interval = [(x - intervalX) % World.MIN_X, (x + intervalX) % World.MAX_X];
+        this.phase = Enemy.phase.LEFT;
+
+        this.ticks = 0;
+
+        this.actualTexture = Enemy.texture;
     }
 
     /**
@@ -19,45 +24,94 @@ class Enemy extends Actor {
     }
 
     texture(shader) {
-        return Enemy.texture;
+        return this.actualTexture;
     }
 
-    /**
-     *
-     * @param {Number} elapsed
-     * @param {Object} keys
-     * @return {Boolean} is out of bounds or not
-     */
-    update(elapsed, keys) {
-        this.lasers = this.lasers.filter(laser => !laser.update(elapsed, keys));
-        this.y -= elapsed / this.speed;
-        this.fire();
+    bounds() {
+        return {
+            right: this.interval[0] - this.width/2,
+            left: this.interval[1] + this.width/2,
+            top: World.MAX_Y - this.height/2,
+            bottom: World.MIN_Y + this.height/2
+        };
+    }
+
+    update(elapsed, keys, globals) {
+        super.update(elapsed, keys, globals);
+
+        // const bounds = this.bounds();
+
+        if (this.dead) {
+            ++this.ticks;
+            if (this.ticks > Enemy.explosionTextures.length * 5) {
+                this.ticks = 0;
+                return true;
+            }
+            if (this.ticks % 5 === 0) {
+                this.actualTexture = Enemy.explosionTextures[this.ticks/5];
+            }
+        } else {
+
+            if (this.cross(globals.spaceship)) {
+                this.die();
+                // TODO refacto
+                globals.spaceship.life--;
+            }
+
+            const decrement = elapsed / this.speed;
+
+            if (this.phase === Enemy.phase.LEFT) {
+                if (this.x > this.interval[0]) {
+                    this.x -= decrement;
+                } else {
+                    this.phase = Enemy.phase.RIGHT;
+                }
+            } else if (this.phase === Enemy.phase.RIGHT) {
+                if (this.x < this.interval[1]) {
+                    this.x += decrement;
+                } else {
+                    this.phase = Enemy.phase.LEFT;
+                }
+            }
+
+            this.y -= decrement;
+
+            this.fire(globals.enemyLasers);
+        }
+
         return this.y <= World.MIN_Y;
     }
 
-    draw() {
+    /*draw() {
         super.draw();
         if (this.lasers.length) {
             this.lasers.forEach(laser => laser.draw());
         }
-    }
+    }*/
 
-    fire() {
+    fire(lasers) {
         const now = +Date.now()
         const elapsed = now - this.timeElapsedSinceLastFire;
         if (elapsed > 1 / this.fireRate * 1000) {
             this.timeElapsedSinceLastFire = now;
-            this.lasers.push(new EnemyLaser(this.x, this.y + -0.07, this.fireSpeed));
+            lasers.push(new EnemyLaser(this.x, this.y + -0.07, this.fireSpeed));
         }
     }
 
 }
 
+Enemy.phase = {
+    RIGHT: 0,
+    LEFT: 1
+};
+
 Enemy.z = -0.5;
 
-Enemy.init = function () {
+Enemy.init = function (textures) {
 
-    Enemy.texture = Utils.initTexture('img/tie.png');
+    Enemy.texture = textures[1];
+
+    Enemy.explosionTextures = textures.slice(3, 8);
 
     Enemy.shader = Actor.initShaders(`
         // *** le vertex shader ***
