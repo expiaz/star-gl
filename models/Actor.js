@@ -63,8 +63,8 @@ class Actor {
 
     _updateHibox() {
         this._hitbox = {
-            x: this.x + this.width / 2 - this.height / 2,
-            y: this.y + this.width / 2 - this.height / 2,
+            x: this.x - this.width / 2,
+            y: this.y - this.height / 2,
             width: this.width,
             height: this.height
         };
