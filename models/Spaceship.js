@@ -18,8 +18,15 @@ class Spaceship extends Actor {
         return Spaceship.shader;
     }
 
-    texture(shader) {
+    texture() {
         return Spaceship.texture;
+    }
+
+    hit() {
+      if (0 === --this.life) {
+        this.die()
+      }
+      // TODO update lifes
     }
 
     /**
@@ -68,8 +75,6 @@ class Spaceship extends Actor {
         if (keys[32]) { // space
             this.fire(globals.lasers);
         }
-
-        document.querySelector('#life').textContent = this.life;
 
         return this.life > 0;
     }

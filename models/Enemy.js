@@ -4,7 +4,7 @@ class Enemy extends Actor {
         super(0.1, 0.1, x, y, Enemy.z);
         this.timeElapsedSinceLastFire = +Date.now()
         this.speed = 1500;
-        this.fireRate = 2;
+        this.fireRate = 1;
         this.fireSpeed = 700;
 
         this.interval = [(x - intervalX) % World.MIN_X, (x + intervalX) % World.MAX_X];
@@ -15,15 +15,11 @@ class Enemy extends Actor {
         this.actualTexture = Enemy.texture;
     }
 
-    /**
-     *
-     * @return {*|Enemy.shader|Actor.shader}
-     */
     shader() {
         return Enemy.shader;
     }
 
-    texture(shader) {
+    texture() {
         return this.actualTexture;
     }
 
@@ -43,19 +39,19 @@ class Enemy extends Actor {
 
         if (this.dead) {
             ++this.ticks;
-            if (this.ticks > Enemy.explosionTextures.length * 5) {
+            if (this.ticks > Enemy.explosionTextures.length * Enemy.explosionFrame) {
                 this.ticks = 0;
                 return true;
             }
-            if (this.ticks % 5 === 0) {
-                this.actualTexture = Enemy.explosionTextures[this.ticks/5];
+            if (this.ticks % Enemy.explosionFrame === 0) {
+                this.actualTexture = Enemy.explosionTextures[this.ticks / Enemy.explosionFrame];
             }
         } else {
 
             if (this.cross(globals.spaceship)) {
                 this.die();
-                // TODO refacto
-                globals.spaceship.life--;
+                globals.spaceship.hit();
+                return true;
             }
 
             const decrement = elapsed / this.speed;
@@ -82,13 +78,6 @@ class Enemy extends Actor {
         return this.y <= World.MIN_Y;
     }
 
-    /*draw() {
-        super.draw();
-        if (this.lasers.length) {
-            this.lasers.forEach(laser => laser.draw());
-        }
-    }*/
-
     fire(lasers) {
         const now = +Date.now()
         const elapsed = now - this.timeElapsedSinceLastFire;
@@ -105,13 +94,15 @@ Enemy.phase = {
     LEFT: 1
 };
 
+Enemy.explosionFrame = 5;
+
 Enemy.z = -0.5;
 
 Enemy.init = function (textures) {
 
     Enemy.texture = textures[1];
 
-    Enemy.explosionTextures = textures.slice(3, 8);
+    Enemy.explosionTextures = textures.slice(3, 7);
 
     Enemy.shader = Actor.initShaders(`
         // *** le vertex shader ***

@@ -7,7 +7,6 @@ class Game {
             'img/t65.png',
             'img/tie.png',
             'img/laser.png',
-            'img/explosions/explosion0.png',
             'img/explosions/explosion1.png',
             'img/explosions/explosion2.png',
             'img/explosions/explosion3.png',

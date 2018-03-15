@@ -26,12 +26,6 @@ class Actor {
             wo2, ho2, z, // haut droite
             -wo2, ho2, z // haut gauche
         ];
-        /*this.vertices = {
-            00: [vertices[0], vertices[1]],
-            10: [vertices[3], vertices[4]],
-            11: [vertices[6], vertices[7]],
-            01: [vertices[9], vertices[10]]
-        };*/
         // on envoie ces positions au GPU ici (et on se rappelle de leur nombre/taille)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
         this.vertexBuffer.itemSize = 3;
@@ -96,12 +90,6 @@ class Actor {
 
     hitbox() {
         return this._hitbox;
-        /*{
-            right: this.x - this.width/2,
-            left: this.x + this.width/2,
-            top: this.y + this.height/2,
-            bottom: this.y - this.height/2
-        };*/
     }
 
     bounds() {
@@ -121,7 +109,7 @@ class Actor {
         gl.activeTexture(gl.TEXTURE0); // on active l'unite de texture 0
         gl.bindTexture(gl.TEXTURE_2D, texture); // on place texture dans l'unité active
         gl.uniform1i(shader.textureUniform, 0); // on dit au shader que textureUniform se trouve sur l'unite de texture 0
-        // gl.clearColor(0, 0, 0, 0);
+        gl.clearColor(0, 0, 0, 0); // TODO qu'est-ce que ça change ?
     }
 
     sendAttributes(shader) {

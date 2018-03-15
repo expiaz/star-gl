@@ -1,7 +1,9 @@
 <html>
 <head>
     <title>SpaceShip</title>
-    <meta http-equiv="content-type" content="text/html; charset=windows-1252">
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" type="text/css" href="style.css" />
 
     <script type="text/javascript" src="gl-matrix.js"></script>
     <script type="text/javascript" src="fbo.js"></script>
@@ -15,51 +17,61 @@
     <script type="text/javascript" src="models/Enemy.js"></script>
     <script type="text/javascript" src="models/Laser.js"></script>
     <script type="text/javascript" src="models/EnemyLaser.js"></script>
-
-    <script type="text/javascript">
-
-        function webGLStart() {
-            const canvas = document.getElementById("SpaceShip");
-            const game = new Game(canvas);
-            window.game = game;
-        }
-
-    </script>
 </head>
-<body onload="webGLStart();">
+<body>
 <div class="main">
-    <div class="canvas">
-        <canvas id="SpaceShip" style="border: none;" width="800" height="800"></canvas>
+    <div class="game-container">
+        <canvas id="game" class="game-screen" width="800" height="800"></canvas>
+        <div class="game-layout">
+          <div class="life">
+            <span>1</span>
+            <span>2</span>
+            <span>3</span>
+          </div>
+
+          <div class="score">
+            125478
+          </div>
+
+          <div class="controls">
+            <span>P: pause</span>
+            <span>Espace: tirer</span>
+            <span>ZQSD: déplacer</span>
+          </div>
+
+          <div class="start-screen">
+            <h1>Star-GL</h1>
+            <h3><i>Click to play</i></h3>
+          </div>
+
+          <div class="end-screen">
+            <h1>Game Over</h1>
+            <ul>
+              <li>45264</li>
+              <li>785</li>
+            </ul>
+          </div>
+        </div>
     </div>
-
-    <p><span>Pause : p, tirer : espace</span> | Vies : <span id="life"></span></p>
-
-
-    <!--<div id="dashboard">
-        <img src="img/banniere.jpg"/>
-        <nav>
-            <div class="btn-logic">
-                <button type="button" onclick="game.start()">Start</button>
-                <button type="button" onclick="game.pause()">Pause</button>
-                <button style="display: none" type="button">Stop</button>
-                <button style="display: none" type="button">Reset</button>
-            </div>
-            <div class="data">
-                <p id="level">Level : </p>
-                <p id="score">Score : </p>
-            </div>
-            <div class="commandes">
-                <img src="img/yoda.png"/>
-                <h2>Commandes</h2>
-                <p>Mouvements = ZQSD</p>
-                <p>Tirs = Espace</p>
-                <p>Pause = p</p>
-            </div>
-        </nav>
-    </div>
-    <div id="end">
-        <img src="img/end.png">
-    </div>-->
 </div>
+<script type="text/javascript">
+
+    document.addEventListener('DOMContentLoaded', e => {
+
+      let started = false;
+
+      document.querySelector('.game-container')
+
+      function webGLStart() {
+          const canvas = document.getElementById("game");
+          const game = new Game(canvas);
+          window.game = game;
+      }
+
+      webGLStart();
+
+    });
+
+</script>
 </body>
 </html>

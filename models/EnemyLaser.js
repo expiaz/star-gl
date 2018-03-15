@@ -20,8 +20,7 @@ class EnemyLaser extends Actor {
 
         if (this.cross(globals.spaceship)) {
             this.die();
-            // TODO refacto
-            globals.spaceship.life--;
+            globals.spaceship.hit();
             return true;
         }
 

@@ -1,0 +1,62 @@
+.game-container {
+  width: 800px;
+  height: 800px;
+  position: relative;
+  margin: auto;
+}
+
+.game-container .game-screen {
+  width: 800px;
+  height: 800px;
+  border: none;
+}
+
+.game-container .game-layout {
+  position: absolute;
+  z-index: 99;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  color: white;
+}
+
+.game-container .game-layout .start-screen,
+.game-container .game-layout .end-screen {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('img/espace.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  text-align: center;
+
+  display: none;
+}
+
+.life, .score, .controls {
+  position: absolute;
+}
+
+.life {
+  top: 0;
+  right: 0;
+  height: 50px;
+  width: 50%;
+}
+
+.score {
+  top: 0;
+  left: 0;
+  height: 50px;
+  width: 50%;
+}
+
+.controls {
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px 5px;
+  background: rgba(0, 0, 0, 0.5);
+}
