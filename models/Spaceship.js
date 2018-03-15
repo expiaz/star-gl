@@ -8,6 +8,10 @@ class Spaceship extends Actor {
         this.horizontalSpeed = 0.02;
         this.fireSpeed = 500;
         this.life = 3;
+
+        this.flicker = 0;
+
+        this.currentTexture = Spaceship.texture;
     }
 
     /**
@@ -19,13 +23,14 @@ class Spaceship extends Actor {
     }
 
     texture() {
-        return Spaceship.texture;
+        return this.currentTexture; //Spaceship.texture;
     }
 
     hit() {
       if (0 === --this.life) {
         this.die()
       }
+      this.flicker = 100;
       // TODO update lifes
     }
 
@@ -38,7 +43,20 @@ class Spaceship extends Actor {
      */
     update(elapsed, keys, globals) {
         if (super.update(elapsed, keys, globals)) {
+            // dead by another object
             return true;
+        }
+
+        if (this.flicker) {
+            if (0 === this.flicker % 10) {
+                // play flickering
+                if (0 === this.flicker / 10 % 2) {
+                    this.currentTexture = Enemy.texture;
+                } else {
+                    this.currentTexture = Spaceship.texture;
+                }
+            }
+            --this.flicker;
         }
 
         const bounds = this.bounds();
@@ -76,7 +94,15 @@ class Spaceship extends Actor {
             this.fire(globals.lasers);
         }
 
-        return this.life > 0;
+        return false;
+    }
+
+    cross(other) {
+        if (this.flicker > 0) {
+            // while playing touched (flickering) animation, it's impossible to be touched again
+            return false;
+        }
+        return super.cross(other);
     }
 
     /**

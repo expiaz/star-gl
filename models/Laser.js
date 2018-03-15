@@ -22,6 +22,7 @@ class Laser extends Actor {
             if (this.cross(globals.enemies[i])) {
                 globals.enemies[i].die();
                 this.die();
+                globals.score(Enemy.points);
                 return true;
             }
         }
@@ -30,12 +31,13 @@ class Laser extends Actor {
             if (this.cross(globals.enemyLasers[i])) {
                 globals.enemyLasers[i].die();
                 this.die();
+                globals.score(EnemyLaser.points);
                 return true;
             }
         }
 
         this.y += elapsed / this.velocity;
-        return this.y >= World.MAX_Y;
+        return this.y > World.MAX_Y;
     }
 
 }

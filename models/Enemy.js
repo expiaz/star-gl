@@ -46,33 +46,39 @@ class Enemy extends Actor {
             if (this.ticks % Enemy.explosionFrame === 0) {
                 this.actualTexture = Enemy.explosionTextures[this.ticks / Enemy.explosionFrame];
             }
-        } else {
 
-            if (this.cross(globals.spaceship)) {
-                this.die();
-                globals.spaceship.hit();
-                return true;
+            return false;
+        }
+
+        if (globals.spaceship.cross(this)) {
+            this.die();
+            globals.spaceship.hit();
+            // do not return here, we need to play the explosion animation
+        }
+
+        const decrement = elapsed / this.speed;
+
+        if (this.phase === Enemy.phase.LEFT) {
+            if (this.x > this.interval[0]) {
+                this.x -= decrement;
+            } else {
+                this.phase = Enemy.phase.RIGHT;
             }
-
-            const decrement = elapsed / this.speed;
-
-            if (this.phase === Enemy.phase.LEFT) {
-                if (this.x > this.interval[0]) {
-                    this.x -= decrement;
-                } else {
-                    this.phase = Enemy.phase.RIGHT;
-                }
-            } else if (this.phase === Enemy.phase.RIGHT) {
-                if (this.x < this.interval[1]) {
-                    this.x += decrement;
-                } else {
-                    this.phase = Enemy.phase.LEFT;
-                }
+        } else if (this.phase === Enemy.phase.RIGHT) {
+            if (this.x < this.interval[1]) {
+                this.x += decrement;
+            } else {
+                this.phase = Enemy.phase.LEFT;
             }
+        }
 
-            this.y -= decrement;
+        this.y -= decrement;
 
-            this.fire(globals.enemyLasers);
+        this.fire(globals.enemyLasers);
+
+        if (this.y <= World.MIN_Y) {
+            // out of bounds, player loss 1k points
+            globals.score(- Enemy.points * 10);
         }
 
         return this.y <= World.MIN_Y;
@@ -88,6 +94,8 @@ class Enemy extends Actor {
     }
 
 }
+
+Enemy.points = 100;
 
 Enemy.phase = {
     RIGHT: 0,

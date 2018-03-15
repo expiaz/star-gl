@@ -43,15 +43,27 @@ class Game {
 
             this.controls = {
                 pause: 'P'.charCodeAt(0)
-            }
+            };
 
             this.lastTick = 0;
             this.keys = {};
 
             this.paused = false;
+            this.ended = false;
+            this.started = false;
+
+            this.totalScore = 0;
+            this.scoreBoard = JSON.parse(localStorage.getItem('star-gl') || '[]');
+
+            this.layout = {
+                life: document.querySelector('.game-layout .life'),
+                score: document.querySelector('.game-layout .score'),
+                start: document.querySelector('.game-layout .start-screen'),
+                end: document.querySelector('.game-layout .end-screen'),
+            };
 
             // la couleur de fond sera noire
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            //gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
             // active le teste de profondeur
             gl.enable(gl.DEPTH_TEST);
@@ -60,14 +72,53 @@ class Game {
 
             window.addEventListener('keydown', this.onKeyDown.bind(this));
             window.addEventListener('keyup', this.onKeyUp.bind(this));
+            window.addEventListener('click', _ => {
+                if (false === this.started) {
+                    this.start();
+                } else if (this.ended === true) {
+                    window.location.reload();
+                }
+            });
 
-            this.start();
+            this.layout.score.textContent = 0;
+            this.layout.life.textContent = this.spaceship.life;
+            this.layout.start.style.display = 'block';
         });
     }
 
     start() {
         // dessine la scene
+        this.started = true;
+        this.layout.start.style.display = 'none';
         this.tick();
+    }
+
+    end() {
+        this.paused = true;
+        this.ended = true;
+
+        this.scoreBoard.push(this.totalScore);
+        const scoreBoard = this.scoreBoard.sort((a,b) => a > b).filter(e => e > 0).slice(0, 5);
+        localStorage.setItem('star-gl', JSON.stringify(scoreBoard));
+        const list = this.layout.end.querySelector('.highscores');
+        scoreBoard.forEach(score => {
+            const li = document.createElement('li');
+            li.textContent = score;
+            if (score === this.totalScore) {
+                li.style.color = 'red';
+            }
+            list.appendChild(li);
+        });
+        this.layout.end.querySelector('.playerscore').textContent = this.totalScore;
+
+        this.layout.end.style.display = 'block';
+    }
+
+    score(number) {
+        this.totalScore += number;
+        if (this.totalScore < 0) {
+            this.totalScore = 0;
+        }
     }
 
     pause() {
@@ -101,10 +152,18 @@ class Game {
         const timeNow = +Date.now();
         if (this.lastTick !== 0) {
             // chaque objet est susceptible de s'animer
+            const scoreNow = this.totalScore;
+            const lifeNow = this.spaceship.life;
+
             const elapsed = timeNow - this.lastTick;
             this.heightfield.update(elapsed, this.keys, this);
             this.background.update(elapsed, this.keys, this);
-            this.spaceship.update(elapsed, this.keys, this);
+
+            if (this.spaceship.update(elapsed, this.keys, this)) {
+                // game over no more lifes
+                this.end();
+                return;
+            }
 
             this.enemies = this.enemies.filter(e => !e.update(elapsed, this.keys, this));
             this.lasers = this.lasers.filter(laser => !laser.update(elapsed, this.keys, this));
@@ -113,6 +172,13 @@ class Game {
             if(this.ticks > 50) {
                 this.ticks = 0;
                 this.enemies.push(new Enemy(Math.random() - Math.random(), 1.1, Math.random()));
+            }
+
+            if (this.totalScore !== scoreNow) {
+                this.layout.score.textContent = this.totalScore;
+            }
+            if (this.spaceship.life !== lifeNow) {
+                this.layout.life.textContent = this.spaceship.life;
             }
         }
         this.lastTick = timeNow;

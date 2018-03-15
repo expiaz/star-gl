@@ -18,9 +18,10 @@ class EnemyLaser extends Actor {
             return true;
         }
 
-        if (this.cross(globals.spaceship)) {
+        if (globals.spaceship.cross(this)) {
             this.die();
             globals.spaceship.hit();
+            globals.score(- EnemyLaser.points * 10);
             return true;
         }
 
@@ -29,6 +30,8 @@ class EnemyLaser extends Actor {
     }
 
 }
+
+EnemyLaser.points = 10;
 
 EnemyLaser.z = -0.8;
 
