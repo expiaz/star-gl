@@ -56,11 +56,15 @@ class Game {
             this.scoreBoard = JSON.parse(localStorage.getItem('star-gl') || '[]');
 
             this.layout = {
+                layout: document.querySelector('.game-layout'),
                 life: document.querySelector('.game-layout .life'),
                 score: document.querySelector('.game-layout .score'),
+                upscore: document.querySelector('.game-layout .upscore'),
                 start: document.querySelector('.game-layout .start-screen'),
                 end: document.querySelector('.game-layout .end-screen'),
             };
+
+            this.layout.layout.removeChild(this.layout.upscore);
 
             // la couleur de fond sera noire
             //gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -82,14 +86,14 @@ class Game {
 
             this.layout.score.textContent = 0;
             this.layout.life.textContent = this.spaceship.life;
-            this.layout.start.style.display = 'block';
+            this.layout.start.style.opacity = '1';
         });
     }
 
     start() {
         // dessine la scene
         this.started = true;
-        this.layout.start.style.display = 'none';
+        this.layout.start.style.opacity = '0';
         this.tick();
     }
 
@@ -98,7 +102,8 @@ class Game {
         this.ended = true;
 
         this.scoreBoard.push(this.totalScore);
-        const scoreBoard = this.scoreBoard.sort((a,b) => a > b).filter(e => e > 0).slice(0, 5);
+        const scoreBoard = this.scoreBoard.sort((a,b) => a < b)
+                                          .filter(e => e > 0).slice(0, 5);
         localStorage.setItem('star-gl', JSON.stringify(scoreBoard));
         const list = this.layout.end.querySelector('.highscores');
         scoreBoard.forEach(score => {
@@ -111,7 +116,7 @@ class Game {
         });
         this.layout.end.querySelector('.playerscore').textContent = this.totalScore;
 
-        this.layout.end.style.display = 'block';
+        this.layout.end.style.opacity = '1';
     }
 
     score(number) {
@@ -119,6 +124,15 @@ class Game {
         if (this.totalScore < 0) {
             this.totalScore = 0;
         }
+
+        // play score animation
+        this.layout.score.textContent = this.totalScore;
+        this.layout.upscore.textContent = number < 0 ? `-${number}` : `+${number}`;
+        this.layout.upscore.style.color = number < 0 ? 'red' : 'green';
+        this.layout.layout.appendChild(this.layout.upscore);
+        setTimeout(() => {
+          this.layout.layout.removeChild(this.layout.upscore);
+        }, 2000);
     }
 
     pause() {
@@ -152,7 +166,6 @@ class Game {
         const timeNow = +Date.now();
         if (this.lastTick !== 0) {
             // chaque objet est susceptible de s'animer
-            const scoreNow = this.totalScore;
             const lifeNow = this.spaceship.life;
 
             const elapsed = timeNow - this.lastTick;
@@ -174,9 +187,6 @@ class Game {
                 this.enemies.push(new Enemy(Math.random() - Math.random(), 1.1, Math.random()));
             }
 
-            if (this.totalScore !== scoreNow) {
-                this.layout.score.textContent = this.totalScore;
-            }
             if (this.spaceship.life !== lifeNow) {
                 this.layout.life.textContent = this.spaceship.life;
             }

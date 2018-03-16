@@ -99,7 +99,8 @@ class Spaceship extends Actor {
 
     cross(other) {
         if (this.flicker > 0) {
-            // while playing touched (flickering) animation, it's impossible to be touched again
+            // while playing touched (flickering) animation, 
+            // it's impossible to be touched again
             return false;
         }
         return super.cross(other);

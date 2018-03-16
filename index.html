@@ -23,32 +23,33 @@
     <div class="game-container">
         <canvas id="game" class="game-screen" width="800" height="800"></canvas>
         <div class="game-layout">
-          <div class="life">
-            <span>1</span>
-            <span>2</span>
-            <span>3</span>
-          </div>
+          <div class="life"></div>
 
-          <div class="score">
-            0
-          </div>
+          <div class="score">0</div>
+          <div class="upscore">-100</div>
 
           <div class="controls">
-            <span>P: pause</span>
-            <span>Espace: tirer</span>
-            <span>ZQSD: déplacer</span>
+            <p>P: pause</p>
+            <p>Espace: tirer</p>
+            <p>ZQSD: déplacer</p>
           </div>
 
           <div class="start-screen">
-            <h1>Star-GL</h1>
-            <h3><i>Click to play</i></h3>
+            <div class="wrapper">
+              <h1>Star-GL</h1>
+              <h3>Click to play</h3>
+            </div>
           </div>
 
           <div class="end-screen">
-            <h1>Game Over</h1>
-            <ul class="highscores">
-            </ul>
-            <p class="highlightscore">Your score : <span class="playerscore"></span></p>
+            <div class="wrapper">
+              <h1>Game Over</h1>
+              <h3>Highscores : </h3>
+              <ul class="highscores"></ul>
+              <p class="highlightscore">
+                Your score : <span class="playerscore"></span>
+              </p>
+            </div>
           </div>
         </div>
     </div>
