@@ -1,3 +1,7 @@
+html{
+  background-image: url('img/fond.jpg');
+}
+
 .game-container {
     width: 800px;
     height: 800px;
@@ -7,18 +11,20 @@
 
 .game-container .game-screen {
     width: 800px;
-    height: 800px;
+    height: 85%;
     border: none;
+    opacity: 0.8;
 }
 
 .game-container .game-layout {
     position: absolute;
     z-index: 99;
-    height: 100%;
+    height: 85%;
     width: 100%;
     top: 0;
     left: 0;
     color: white;
+    opacity: 0.8;
 }
 
 .game-container .game-layout .start-screen,
