@@ -108,9 +108,9 @@ Enemy.z = -0.5;
 
 Enemy.init = function (textures) {
 
-    Enemy.texture = textures[1];
+    Enemy.texture = textures[2];
 
-    Enemy.explosionTextures = textures.slice(3, 7);
+    Enemy.explosionTextures = textures.slice(5, 9);
 
     Enemy.shader = Actor.initShaders(`
         // *** le vertex shader ***

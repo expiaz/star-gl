@@ -52,6 +52,7 @@ class Spaceship extends Actor {
                 // play flickering
                 if (0 === this.flicker / 10 % 2) {
                     this.currentTexture = Enemy.texture;
+                    //this.currentTexture = SpaceshipHit.texture;
                 } else {
                     this.currentTexture = Spaceship.texture;
                 }
@@ -99,7 +100,7 @@ class Spaceship extends Actor {
 
     cross(other) {
         if (this.flicker > 0) {
-            // while playing touched (flickering) animation, 
+            // while playing touched (flickering) animation,
             // it's impossible to be touched again
             return false;
         }

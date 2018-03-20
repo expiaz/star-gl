@@ -10,7 +10,7 @@ class EnemyLaser extends Actor {
     }
 
     texture() {
-        return Laser.texture;
+        return EnemyLaser.texture;
     }
 
     update(elapsed, keys, globals) {
@@ -37,7 +37,7 @@ EnemyLaser.z = -0.8;
 
 EnemyLaser.init = function (textures) {
 
-    EnemyLaser.texture = Laser.texture;
+    EnemyLaser.texture = textures[4];
 
     EnemyLaser.shader = Laser.shader;
 }

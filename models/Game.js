@@ -5,8 +5,10 @@ class Game {
 
         Utils.loadTextures([
             'img/t65.png',
+            'img/t65_hit.png',
             'img/tie.png',
             'img/laser.png',
+            'img/laser_tie.png',
             'img/explosions/explosion1.png',
             'img/explosions/explosion2.png',
             'img/explosions/explosion3.png',
