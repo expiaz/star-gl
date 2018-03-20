@@ -51,8 +51,7 @@ class Spaceship extends Actor {
             if (0 === this.flicker % 10) {
                 // play flickering
                 if (0 === this.flicker / 10 % 2) {
-                    this.currentTexture = Enemy.texture;
-                    //this.currentTexture = SpaceshipHit.texture;
+                    this.currentTexture = Spaceship.textureHit;
                 } else {
                     this.currentTexture = Spaceship.texture;
                 }
@@ -128,6 +127,7 @@ Spaceship.z = -0.6;
 Spaceship.init = function (textures) {
 
     Spaceship.texture = textures[0];
+    Spaceship.textureHit = textures[1];
 
     Spaceship.shader = Actor.initShaders(`
         // *** le vertex shader ***
