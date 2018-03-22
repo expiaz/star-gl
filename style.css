@@ -73,6 +73,9 @@ html{
 .life {
   right: 0;
 }
+.life img{
+  width: 20px;
+}
 
 .score {
     left: 0;

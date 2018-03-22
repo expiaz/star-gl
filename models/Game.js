@@ -23,6 +23,8 @@ class Game {
             'img/explosions/explosion12.png',
             'img/explosions/explosion13.png',
             'img/explosions/explosion14.png',
+            'img/heart.png',
+            'img/empty_heart.png',
         ]).then(textures => {
             Heightfield.init(textures);
             Background.init(textures);
@@ -87,7 +89,9 @@ class Game {
             });
 
             this.layout.score.textContent = 0;
-            this.layout.life.textContent = this.spaceship.life;
+            for(var i = 0; i < this.spaceship.life; i++){
+              this.layout.life.innerHTML += '<span id="life'+ i +'"><img src="./img/heart.png" alt="life"/></span>';
+            }
             this.layout.start.style.opacity = '1';
         });
     }
@@ -190,7 +194,7 @@ class Game {
             }
 
             if (this.spaceship.life !== lifeNow) {
-                this.layout.life.textContent = this.spaceship.life;
+                document.getElementById("life"+this.spaceship.life).innerHTML = '<img src="./img/empty_heart.png" alt="life" />';
             }
         }
         this.lastTick = timeNow;
