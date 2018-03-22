@@ -4,7 +4,7 @@ class Enemy extends Actor {
         super(0.1, 0.1, x, y, Enemy.z);
         this.timeElapsedSinceLastFire = +Date.now()
         this.speed = 1500;
-        this.fireRate = 1;
+        this.fireRate = 3;
         this.fireSpeed = 700;
 
         this.interval = [(x - intervalX) % World.MIN_X, (x + intervalX) % World.MAX_X];
@@ -13,6 +13,14 @@ class Enemy extends Actor {
         this.ticks = 0;
 
         this.actualTexture = Enemy.texture;
+
+        this.deathAudio = new Audio('./son/explosion.mp3');
+        this.blasterAudio = [
+            new Audio('./son/TieBlaster.mp3'),
+            new Audio('./son/TieBlaster.mp3'),
+            new Audio('./son/TieBlaster.mp3'),
+        ];
+        this.currentAudioTrack = 0;
     }
 
     shader() {
@@ -32,6 +40,11 @@ class Enemy extends Actor {
         };
     }
 
+    die() {
+        super.die();
+        this.deathAudio.play();
+    }
+
     update(elapsed, keys, globals) {
         super.update(elapsed, keys, globals);
 
@@ -44,8 +57,6 @@ class Enemy extends Actor {
                 return true;
             }
             if (this.ticks % Enemy.explosionFrame === 0) {
-                /*var audio = new Audio('./son/explosion.mp3');
-                audio.play();*/
                 this.actualTexture = Enemy.explosionTextures[(this.ticks / Enemy.explosionFrame) - 1];
             }
 
@@ -87,12 +98,16 @@ class Enemy extends Actor {
     }
 
     fire(lasers) {
-        /*var audio = new Audio('./son/TieBlaster.mp3');
-        audio.play();*/
         const now = +Date.now()
         const elapsed = now - this.timeElapsedSinceLastFire;
         if (elapsed > 1 / this.fireRate * 1000) {
             this.timeElapsedSinceLastFire = now;
+
+            const audio = this.blasterAudio[this.currentAudioTrack];
+            audio.currentTime = 0;
+            audio.play();
+            this.currentAudioTrack = ++this.currentAudioTrack % this.blasterAudio.length;
+
             lasers.push(new EnemyLaser(this.x, this.y + -0.07, this.fireSpeed));
         }
     }

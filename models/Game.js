@@ -49,6 +49,8 @@ class Game {
                 pause: 'P'.charCodeAt(0)
             };
 
+            this.fps = 0;
+
             this.lastTick = 0;
             this.keys = {};
 
@@ -94,7 +96,7 @@ class Game {
             this.layout.score.textContent = 0;
             this.layout.start.style.opacity = '1';
 
-            //this.tick = this.tick.bind(this);
+            this.tick = this.tick.bind(this);
         });
     }
 
@@ -102,6 +104,12 @@ class Game {
         // dessine la scene
         this.started = true;
         this.layout.start.style.opacity = '0';
+
+        setInterval(() => {
+            console.log(this.fps);
+            this.fps = 0;
+        }, 1000);
+
         this.tick();
     }
 
@@ -158,11 +166,12 @@ class Game {
 
     tick() {
         if (this.paused) return;
+        ++this.fps;
 
         ++this.ticks;
         this.draw();
         this.update();
-        requestAnimationFrame(this.tick.bind(this));
+        requestAnimationFrame(this.tick);
     }
 
     drawScore(number) {
@@ -225,7 +234,7 @@ class Game {
                 }
             }
 
-            if(this.ticks > 50) {
+            if(this.ticks > Game.enemyRate) {
                 this.ticks = 0;
                 this.enemies.push(new Enemy(Math.random() - Math.random(), 1.1, Math.random()));
             }
@@ -278,3 +287,5 @@ class Game {
     }
 
 }
+
+Game.enemyRate = 30;

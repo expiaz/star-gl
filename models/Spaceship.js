@@ -2,8 +2,9 @@ class Spaceship extends Actor {
 
     constructor(x, y) {
         super(0.2, 0.2, x, y, Spaceship.z);
-        this.timeElapsedSinceLastFire = +Date.now()
-        this.fireRate = 4;
+        this.timeElapsedSinceLastFire = +Date.now();
+        this.currentAudioTrack = 0;
+        this.fireRate = 15;
         this.verticalSpeed = 0.02;
         this.horizontalSpeed = 0.02;
         this.fireSpeed = 500;
@@ -23,7 +24,7 @@ class Spaceship extends Actor {
     }
 
     texture() {
-        return this.currentTexture; //Spaceship.texture;
+        return this.currentTexture;
     }
 
     hit() {
@@ -42,6 +43,7 @@ class Spaceship extends Actor {
      * @return {Boolean} is out of bounds or not
      */
     update(elapsed, keys, globals) {
+
         if (super.update(elapsed, keys, globals)) {
             // dead by another object
             return true;
@@ -92,8 +94,6 @@ class Spaceship extends Actor {
 
         if (keys[32]) { // space
             this.fire(globals.lasers);
-            /*var audio = new Audio('./son/Xwingblaster.mp3');
-            audio.play();*/
         }
 
         return false;
@@ -117,6 +117,12 @@ class Spaceship extends Actor {
         const elapsed = now - this.timeElapsedSinceLastFire;
         if (elapsed > 1 / this.fireRate * 1000) {
             this.timeElapsedSinceLastFire = now;
+
+            const audio = Spaceship.audio[this.currentAudioTrack];
+            audio.currentTime = 0;
+            audio.play();
+            this.currentAudioTrack = ++this.currentAudioTrack % Spaceship.audio.length;
+
             lasers.push(new Laser(this.x - this.width / 2.8, this.y + this.height / 2, this.fireSpeed));
             lasers.push(new Laser(this.x + this.width / 2.8, this.y + this.height / 2, this.fireSpeed));
         }
@@ -131,6 +137,23 @@ Spaceship.init = function (textures) {
 
     Spaceship.texture = textures[0];
     Spaceship.textureHit = textures[1];
+
+    Spaceship.audio = [
+        new Audio('./son/Xwingblaster.mp3'),
+        new Audio('./son/Xwingblaster.mp3'),
+        new Audio('./son/Xwingblaster.mp3'),
+        new Audio('./son/Xwingblaster.mp3'),
+        new Audio('./son/Xwingblaster.mp3'),
+        new Audio('./son/Xwingblaster.mp3'),
+        new Audio('./son/Xwingblaster.mp3'),
+        new Audio('./son/Xwingblaster.mp3'),
+        new Audio('./son/Xwingblaster.mp3'),
+        new Audio('./son/Xwingblaster.mp3'),
+    ];
+
+    Spaceship.audio.forEach(track => {
+        track.volume = 0.7;
+    });
 
     Spaceship.shader = Actor.initShaders(`
         // *** le vertex shader ***
