@@ -62,6 +62,8 @@ class Game {
             this.layout = {
                 layout: document.querySelector('.game-layout'),
                 life: document.querySelector('.game-layout .life'),
+                emptyLife: document.querySelector('.game-layout .life .empty'),
+                fullLife: document.querySelector('.game-layout .life .full'),
                 score: document.querySelector('.game-layout .score'),
                 upscore: document.querySelector('.game-layout .upscore'),
                 start: document.querySelector('.game-layout .start-screen'),
@@ -69,6 +71,7 @@ class Game {
             };
 
             this.layout.layout.removeChild(this.layout.upscore);
+            this.drawLifes();
 
             // la couleur de fond sera noire
             //gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -89,10 +92,9 @@ class Game {
             });
 
             this.layout.score.textContent = 0;
-            for(var i = 0; i < this.spaceship.life; i++){
-              this.layout.life.innerHTML += '<span id="life'+ i +'"><img src="./img/heart.png" alt="life"/></span>';
-            }
             this.layout.start.style.opacity = '1';
+
+            //this.tick = this.tick.bind(this);
         });
     }
 
@@ -108,8 +110,10 @@ class Game {
         this.ended = true;
 
         this.scoreBoard.push(this.totalScore);
-        const scoreBoard = this.scoreBoard.sort((a,b) => a < b)
-                                          .filter(e => e > 0).slice(0, 5);
+        const scoreBoard = this.scoreBoard.sort((a,b) => a < b).filter(e => e > 0).reduce((acc, e) => {
+            if (!~acc.indexOf(e)) acc.push(e);
+            return acc;
+        }, []).slice(0, 5);
         localStorage.setItem('star-gl', JSON.stringify(scoreBoard));
         const list = this.layout.end.querySelector('.highscores');
         scoreBoard.forEach(score => {
@@ -130,22 +134,15 @@ class Game {
         if (this.totalScore < 0) {
             this.totalScore = 0;
         }
-
         // play score animation
-        this.layout.score.textContent = this.totalScore;
-        this.layout.upscore.textContent = number < 0 ? `-${number}` : `+${number}`;
-        this.layout.upscore.style.color = number < 0 ? 'red' : 'green';
-        this.layout.layout.appendChild(this.layout.upscore);
-        setTimeout(() => {
-          this.layout.layout.removeChild(this.layout.upscore);
-        }, 2000);
+        this.drawScore(number);
     }
 
     pause() {
         this.paused = !this.paused;
         if (false === this.paused) {
             this.lastTick = +Date.now();
-            requestAnimationFrame(this.tick.bind(this));
+            requestAnimationFrame(this.tick);
         }
         return this.paused;
     }
@@ -168,6 +165,28 @@ class Game {
         requestAnimationFrame(this.tick.bind(this));
     }
 
+    drawScore(number) {
+        this.layout.score.textContent = this.totalScore;
+        const node = this.layout.upscore.cloneNode(true);
+        node.innerHTML = number < 0 ? number : `<span class="arial">+</span>${number}`;
+        node.style.color = number < 0 ? 'red' : 'green';
+        node.style.left = 50 + String(this.totalScore).length * 10;
+        this.layout.layout.appendChild(node);
+        setTimeout(() => {
+            this.layout.layout.removeChild(node);
+        }, 2000);
+    }
+
+    drawLifes() {
+        while (this.layout.life.firstChild) this.layout.life.removeChild(this.layout.life.firstChild);
+        for (var i = 0; i < this.spaceship.life; ++i) {
+            this.layout.life.appendChild(this.layout.fullLife.cloneNode(true));
+        }
+        for (var i = 0; i < Spaceship.lifes - this.spaceship.life; ++i) {
+            this.layout.life.appendChild(this.layout.emptyLife.cloneNode(true));
+        }
+    }
+
     update() {
         const timeNow = +Date.now();
         if (this.lastTick !== 0) {
@@ -184,9 +203,27 @@ class Game {
                 return;
             }
 
+            /*
             this.enemies = this.enemies.filter(e => !e.update(elapsed, this.keys, this));
             this.lasers = this.lasers.filter(laser => !laser.update(elapsed, this.keys, this));
             this.enemyLasers = this.enemyLasers.filter(laser => !laser.update(elapsed, this.keys, this));
+            */
+
+            for(var i = 0; i < this.enemies.length; ++i) {
+                if (this.enemies[i].update(elapsed, this.keys, this)) {
+                    this.enemies.splice(i, 1);
+                }
+            }
+            for(var i = 0; i < this.lasers.length; ++i) {
+                if (this.lasers[i].update(elapsed, this.keys, this)) {
+                    this.lasers.splice(i, 1);
+                }
+            }
+            for(var i = 0; i < this.enemyLasers.length; ++i) {
+                if (this.enemyLasers[i].update(elapsed, this.keys, this)) {
+                    this.enemyLasers.splice(i, 1);
+                }
+            }
 
             if(this.ticks > 50) {
                 this.ticks = 0;
@@ -194,7 +231,7 @@ class Game {
             }
 
             if (this.spaceship.life !== lifeNow) {
-                document.getElementById("life"+this.spaceship.life).innerHTML = '<img src="./img/empty_heart.png" alt="life" />';
+                this.drawLifes();
             }
         }
         this.lastTick = timeNow;

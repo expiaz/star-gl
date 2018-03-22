@@ -6,8 +6,7 @@ class Actor {
      * @param {Number} y
      */
     constructor(width, height, x, y, z) {
-        this.x = x;
-        this.y = y;
+        this.positions = [x, y];
         this.width = width;
         this.height = height;
         this.dead = false;
@@ -53,6 +52,22 @@ class Actor {
         ];
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(tri), gl.STATIC_DRAW);
         this.triangles.numItems = 6;
+    }
+
+    get x() {
+        return this.positions[0];
+    }
+
+    get y() {
+        return this.positions[1];
+    }
+
+    set x(x) {
+        this.positions[0] = x;
+    }
+
+    set y(y) {
+        this.positions[1] = y;
     }
 
     _updateHibox() {
@@ -102,7 +117,7 @@ class Actor {
     }
 
     sendUniforms(shader) {
-        gl.uniform2fv(shader.positionUniform, [this.x, this.y]);
+        gl.uniform2fv(shader.positionUniform, this.positions);
     }
 
     sendTexture(shader, texture) {

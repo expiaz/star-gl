@@ -21,46 +21,50 @@
 <body>
 <div class="main">
     <div class="game-container">
-        <canvas id="game" class="game-screen" width="800" height="800"></canvas>
-        <div class="game-layout">
-          <div class="life"></div>
+        <div class="game-wrapper">
+            <canvas id="game" class="game-screen" width="800" height="800"></canvas>
+            <div class="game-layout">
+                <div class="life">
+                    <img class="full" width="24" src="./img/heart.png" alt="life"/>
+                    <img class="empty" width="24" src="./img/empty_heart.png" alt="empty life"/>
+                </div>
 
-          <div class="score">0</div>
-          <div class="upscore">-100</div>
+                <div class="score">0</div>
+                <div class="upscore"></div>
 
-          <div class="controls">
-            <p>P: pause</p>
-            <p>Espace: tirer</p>
-            <p>ZQSD: déplacer</p>
-          </div>
+                <div class="controls">
+                    <p>p: pause</p>
+                    <p>espace: tirer</p>
+                    <p>zqsd: deplacer</p>
+                </div>
 
-          <div class="start-screen">
-            <div class="wrapper">
-              <h1>Star-GL</h1>
-              <h3>Click to play</h3>
+                <div class="start-screen">
+                    <div class="wrapper">
+                        <h1>star-gl</h1>
+                        <h3>click to play</h3>
+                    </div>
+                </div>
+
+                <div class="end-screen">
+                    <div class="wrapper">
+                        <h1>game over</h1>
+                        <h3>highscores : </h3>
+                        <ul class="highscores"></ul>
+                        <p class="highlightscore">
+                            your score : <span class="playerscore"></span>
+                        </p>
+                        <p>
+                            click to replay
+                        </p>
+                    </div>
+                </div>
             </div>
-          </div>
-
-          <div class="end-screen">
-            <div class="wrapper">
-              <h1>Game Over</h1>
-              <h3>Highscores : </h3>
-              <ul class="highscores"></ul>
-              <p class="highlightscore">
-                Your score : <span class="playerscore"></span>
-              </p>
-            </div>
-          </div>
         </div>
     </div>
 </div>
 <script type="text/javascript">
 
     document.addEventListener('DOMContentLoaded', e => {
-
-      let started = false;
-
-      document.querySelector('.game-container')
 
       function webGLStart() {
           const canvas = document.getElementById("game");

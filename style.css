@@ -1,30 +1,49 @@
-html{
-  background-image: url('img/fond.jpg');
+@font-face {
+    font-family: 'Star Jedi';
+    src: url('fonts/StarJedi.woff2') format('woff2'),
+    url('fonts/StarJedi.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.arial {
+    font-family: Arial, sans-serif!important;
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
+body {
+    font-family: 'Star Jedi', Arial, sans-serif;
+    background-image: url('img/fond.jpg');
 }
 
 .game-container {
     width: 800px;
     height: 800px;
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin: auto;
+}
+
+.game-wrapper {
+    position: relative;
 }
 
 .game-container .game-screen {
     width: 800px;
-    height: 85%;
+    height: 800px;
     border: none;
-    opacity: 0.8;
 }
 
 .game-container .game-layout {
     position: absolute;
     z-index: 99;
-    height: 85%;
+    height: 100%;
     width: 100%;
     top: 0;
     left: 0;
     color: white;
-    opacity: 0.8;
 }
 
 .game-container .game-layout .start-screen,
@@ -45,8 +64,8 @@ html{
 }
 
 .start-screen .wrapper, .end-screen .wrapper {
-  text-align: center;
-  flex-grow: 1;
+    text-align: center;
+    flex-grow: 1;
 }
 
 .end-screen .highlightscore {
@@ -63,21 +82,22 @@ html{
 }
 
 .life, .score {
-    top: 0;
-    height: 50px;
+    top: 0px;
     width: 50%;
-    text-align: center;
     margin-top: 20px;
 }
 
 .life {
-  right: 0;
-}
-.life img{
-  width: 20px;
+    right: 0;
+    text-align: right;
+    margin-right: 40px;
+    margin-top: 43px;
 }
 
 .score {
+    text-align: left;
+    margin-left: 40px;
+    font-size: 24px;
     left: 0;
 }
 
@@ -91,23 +111,24 @@ html{
 }
 
 .controls p {
-  margin: 10px 20px;
+    margin: 10px 20px;
 }
 
 @keyframes upscore {
-  from {
-    top: 30;
-    opacity: 1;
-  }
-  to {
-    top: 0;
-    opacity: 0.5;
-  }
+    from {
+        top: 40px;
+        opacity: 1;
+    }
+    to {
+        top: 0px;
+        opacity: 0.5;
+    }
 }
 
 .upscore {
-  animation: upscore 2s;
-  position: absolute;
-  top: 0;
-  left: 300;
+    animation: upscore 2s;
+    position: absolute;
+    top: 0px;
+    left: 150px;
+    font-size: 20px;
 }

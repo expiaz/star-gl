@@ -21,7 +21,7 @@ class EnemyLaser extends Actor {
         if (globals.spaceship.cross(this)) {
             this.die();
             globals.spaceship.hit();
-            globals.score(- EnemyLaser.points * 10);
+            globals.score(- EnemyLaser.points * 2);
             return true;
         }
 

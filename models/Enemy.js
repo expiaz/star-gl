@@ -44,7 +44,7 @@ class Enemy extends Actor {
                 return true;
             }
             if (this.ticks % Enemy.explosionFrame === 0) {
-                this.actualTexture = Enemy.explosionTextures[this.ticks / Enemy.explosionFrame];
+                this.actualTexture = Enemy.explosionTextures[(this.ticks / Enemy.explosionFrame) - 1];
             }
 
             return false;
@@ -78,7 +78,7 @@ class Enemy extends Actor {
 
         if (this.y <= World.MIN_Y) {
             // out of bounds, player loss 1k points
-            globals.score(- Enemy.points * 10);
+            globals.score(- Enemy.points * 2);
         }
 
         return this.y <= World.MIN_Y;
@@ -110,7 +110,7 @@ Enemy.init = function (textures) {
 
     Enemy.texture = textures[2];
 
-    Enemy.explosionTextures = textures.slice(5, 9);
+    Enemy.explosionTextures = textures.slice(6, 9);
 
     Enemy.shader = Actor.initShaders(`
         // *** le vertex shader ***

@@ -7,7 +7,7 @@ class Spaceship extends Actor {
         this.verticalSpeed = 0.02;
         this.horizontalSpeed = 0.02;
         this.fireSpeed = 500;
-        this.life = 3;
+        this.life = Spaceship.lifes;
 
         this.flicker = 0;
 
@@ -123,6 +123,7 @@ class Spaceship extends Actor {
 }
 
 Spaceship.z = -0.6;
+Spaceship.lifes = 3;
 
 Spaceship.init = function (textures) {
 
