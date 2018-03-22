@@ -91,8 +91,8 @@ class Spaceship extends Actor {
         }
 
         if (keys[32]) { // space
-            this.fire(globals.lasers);
-            var audio = new Audio('./son/Xwingblaster.mp3');
+            /*this.fire(globals.lasers);
+            var audio = new Audio('./son/Xwingblaster.mp3');*/
             audio.play();
         }
 

@@ -44,8 +44,8 @@ class Enemy extends Actor {
                 return true;
             }
             if (this.ticks % Enemy.explosionFrame === 0) {
-              var audio = new Audio('./son/explosion.mp3');
-              audio.play();
+                /*var audio = new Audio('./son/explosion.mp3');
+                audio.play();*/
                 this.actualTexture = Enemy.explosionTextures[(this.ticks / Enemy.explosionFrame) - 1];
             }
 
@@ -87,8 +87,8 @@ class Enemy extends Actor {
     }
 
     fire(lasers) {
-        var audio = new Audio('./son/TieBlaster.mp3');
-        audio.play();
+        /*var audio = new Audio('./son/TieBlaster.mp3');
+        audio.play();*/
         const now = +Date.now()
         const elapsed = now - this.timeElapsedSinceLastFire;
         if (elapsed > 1 / this.fireRate * 1000) {
