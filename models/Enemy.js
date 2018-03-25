@@ -42,7 +42,9 @@ class Enemy extends Actor {
 
     die() {
         super.die();
-        this.deathAudio.play();
+        if (game.audio) {
+            this.deathAudio.play();
+        }
     }
 
     update(elapsed, keys, globals) {
@@ -103,10 +105,12 @@ class Enemy extends Actor {
         if (elapsed > 1 / this.fireRate * 1000) {
             this.timeElapsedSinceLastFire = now;
 
-            const audio = this.blasterAudio[this.currentAudioTrack];
-            audio.currentTime = 0;
-            audio.play();
-            this.currentAudioTrack = ++this.currentAudioTrack % this.blasterAudio.length;
+            if (game.audio) {
+                const audio = this.blasterAudio[this.currentAudioTrack];
+                audio.currentTime = 0;
+                audio.play();
+                this.currentAudioTrack = ++this.currentAudioTrack % this.blasterAudio.length;
+            }
 
             lasers.push(new EnemyLaser(this.x, this.y + -0.07, this.fireSpeed));
         }

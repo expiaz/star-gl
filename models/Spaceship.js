@@ -4,11 +4,12 @@ class Spaceship extends Actor {
         super(0.2, 0.2, x, y, Spaceship.z);
         this.timeElapsedSinceLastFire = +Date.now();
         this.currentAudioTrack = 0;
-        this.fireRate = 15;
+        this._fireRate = Spaceship.fireRate;
         this.verticalSpeed = 0.02;
         this.horizontalSpeed = 0.02;
         this.fireSpeed = 500;
-        this.life = Spaceship.lifes;
+        this._life = Spaceship.lifes;
+        this._lasers = Spaceship.lasers;
 
         this.flicker = 0;
 
@@ -27,12 +28,37 @@ class Spaceship extends Actor {
         return this.currentTexture;
     }
 
+    get lasers() {
+        return this._lasers;
+    }
+
+    set lasers(lasers) {
+        this._lasers = lasers > Spaceship.MAX_LASERS ? Spaceship.MAX_LASERS : lasers;
+    }
+
+    get life() {
+        return this._life;
+    }
+
+    set life(life) {
+        this._life = life % Spaceship.MAX_LIFES;
+    }
+
+    get fireRate() {
+        return this._fireRate;
+    }
+
+    set fireRate(fireRate) {
+        this._fireRate = fireRate > Spaceship.MAX_FIRE_RATE ? Spaceship.MAX_FIRE_RATE : fireRate;
+    }
+
     hit() {
-      if (0 === --this.life) {
-        this.die()
-      }
-      this.flicker = 100;
-      // TODO update lifes
+        this.life -= 1;
+        if (0 === this.life) {
+            this.die()
+        }
+        this.flicker = 100;
+        // TODO update lifes
     }
 
     /**
@@ -118,18 +144,31 @@ class Spaceship extends Actor {
         if (elapsed > 1 / this.fireRate * 1000) {
             this.timeElapsedSinceLastFire = now;
 
-            const audio = Spaceship.audio[this.currentAudioTrack];
-            audio.currentTime = 0;
-            audio.play();
-            this.currentAudioTrack = ++this.currentAudioTrack % Spaceship.audio.length;
+            if (game.audio) {
+                const audio = Spaceship.audio[this.currentAudioTrack];
+                audio.currentTime = 0;
+                audio.play();
+                this.currentAudioTrack = ++this.currentAudioTrack % Spaceship.audio.length;
+            }
 
-            lasers.push(new Laser(this.x - this.width / 2.8, this.y + this.height / 2, this.fireSpeed));
-            lasers.push(new Laser(this.x + this.width / 2.8, this.y + this.height / 2, this.fireSpeed));
+            const ll = this.lasers / 2;
+            for (var i = 0; i < ll; i++) {
+                const y = this.y + 0.1;
+                const offset = 0.03 * i;
+                lasers.push(new Laser(this.x - 0.093 /* this.width / 2.8 */ + offset, y /*this.height / 2*/, this.fireSpeed));
+                lasers.push(new Laser(this.x + 0.093 /* this.width / 2.8 */ - offset, y /*this.height / 2*/, this.fireSpeed));
+            }
         }
     }
 
 }
 
+Spaceship.MAX_LASERS = 8;
+Spaceship.MAX_LIFES = 10;
+Spaceship.MAX_FIRE_RATE = 15;
+
+Spaceship.lasers = 2;
+Spaceship.fireRate = 5;
 Spaceship.z = -0.6;
 Spaceship.lifes = 3;
 
@@ -170,7 +209,7 @@ Spaceship.init = function (textures) {
           // stockage de la coordonnee de texture
           vTextureCoord = aTextureCoord;
         }
-    `,`
+    `, `
         // *** le fragment shader ***
         precision highp float; // precision des nombres flottant
 

@@ -12,7 +12,7 @@ class Heightfield {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
 
         // un tableau contenant les positions des sommets (sur CPU donc)
-        var vertices = [
+        const vertices = [
             -1.0,-1.0, Heightfield.z,
             1.0,-1.0, Heightfield.z,
             1.0, 1.0, Heightfield.z,
@@ -26,7 +26,7 @@ class Heightfield {
         // meme principe pour les couleurs
         this.coordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.coordBuffer);
-        var coords = [
+        const coords = [
             0.0, 0.0,
             1.0, 0.0,
             1.0, 1.0,
@@ -39,7 +39,7 @@ class Heightfield {
         // creation des faces du cube (les triangles) avec les indices vers les sommets
         this.triangles = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.triangles);
-        var tri = [0,1,2,0,2,3];
+        const tri = [0,1,2,0,2,3];
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(tri), gl.STATIC_DRAW);
         this.triangles.numItems = 6;
     }
@@ -49,10 +49,11 @@ class Heightfield {
     }
 
     update(elapsed, keys, globals) {
-        this.timer = this.timer+elapsed*0.0004;
-        var speed = 2.0*(Math.sin(this.timer*0.1)*0.5+0.5);
+        // this.timer = this.timer+elapsed*0.0004;
+        const timer = globals.timer * 0.0004;
+        const speed = 2.0*(Math.sin(timer*0.1)*0.5+0.5);
         this.offset[1] = this.offset[1]+elapsed*0.0004*speed;
-        this.amplitude = 0.2+3.0*(Math.sin(this.timer*0.1)*0.5+0.5);
+        this.amplitude = 0.2+3.0*(Math.sin(timer*0.1)*0.5+0.5);
         this.frequency = 5.0-speed;
     }
 

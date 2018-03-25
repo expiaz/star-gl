@@ -2,8 +2,11 @@ class Actor {
 
     /**
      *
+     * @param {Number} width
+     * @param {Number} height
      * @param {Number} x
      * @param {Number} y
+     * @param {Number} z
      */
     constructor(width, height, x, y, z) {
         this.positions = [x, y];
@@ -33,7 +36,7 @@ class Actor {
         // meme principe pour les coordonnees de texture
         this.coordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.coordBuffer);
-        var coords = [
+        const coords = [
             0.0, 0.0,
             1.0, 0.0,
             1.0, 1.0,
@@ -46,7 +49,7 @@ class Actor {
         // creation des faces du cube (les triangles) avec les indices vers les sommets
         this.triangles = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.triangles);
-        var tri = [
+        const tri = [
             0, 1, 2,
             0, 2, 3
         ];

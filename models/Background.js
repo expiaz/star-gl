@@ -7,7 +7,7 @@ class Background {
         this.vertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         // un tableau contenant les positions des sommets (sur CPU donc)
-        var vertices = [
+        const vertices = [
             -1.0, -1.0, Background.z,
             1.0, -1.0, Background.z,
             1.0, 1.0, Background.z,
@@ -34,7 +34,7 @@ class Background {
         // meme principe pour les couleurs
         this.coordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.coordBuffer);
-        var coords = [
+        const coords = [
             0.0, 0.0,
             1.0, 0.0,
             1.0, 1.0,
@@ -47,7 +47,7 @@ class Background {
         // creation des faces du cube (les triangles) avec les indices vers les sommets
         this.triangles = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.triangles);
-        var tri = [
+        const tri = [
             0, 1, 2,
             0, 2, 3
         ];
@@ -150,15 +150,30 @@ Background.init = function () {
         varying vec3 vNormal; // recuperation de la normale rasterisee
         varying vec4 vPosition; // recuperation de la position rasterisee
     
-        vec3 shade(in vec3 n,in float d) {
+        vec3 shade(in vec3 n, in float d) {
             vec2 xy = vTextureCoord.xy * 2.0 - vec2(1.0);
             vec3 v = - normalize(vec3(xy.x, xy.y, 1.0)); // vecteur vue
             vec3 l = normalize(vec3(-0.3, 0.0, 1.0)); // vecteur lumière (pourrait varier au cours du temps pour de meilleurs effets)
+            vec3 r = reflect(l, n);
+            float q = 50.0;
+            
+            vec3 Ka = vec3(0.0,0.0,0.0);
+            vec3 Kd = vec3(0.3568627450980392,0.21176470588235294,0.1411764705882353);
+            vec3 Ks = vec3(0.0);
+            
+            float coefD = max(dot(n, l), 0.0);
+            float coefS = pow(max(dot(v, r), 0.0), q);
+            
+            vec3 phong = Ka + Kd * coefD + Ks * coefS;
             
             // TODO : le shading !
             // la fonction prend en entrée la normale du terrain et sa profondeur
+            // phong model : 
+            // Ka.rgba (ambiante color) + 
+            // Kd.rgba (diffuse color) * (normal.xyz . light.xyz) + 
+            // Ks.rgba (specular color) * (view.xyz (camera) . reflection.xyz) ^ q
             
-            return n;
+            return phong;
         }
     
         vec3 computeNormal() {

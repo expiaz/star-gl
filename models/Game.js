@@ -32,6 +32,9 @@ class Game {
             Enemy.init(textures);
             Laser.init(textures);
             EnemyLaser.init(textures);
+            Bonus.init(textures);
+
+            Game.bonus = [LifeBonus, LaserBonus, FireRateBonus];
 
             this.lasers = [];
             this.enemyLasers = [];
@@ -46,10 +49,13 @@ class Game {
             this.ticks = 0;
 
             this.controls = {
-                pause: 'P'.charCodeAt(0)
+                pause: 'P'.charCodeAt(0),
+                sound: 'M'.charCodeAt(0)
             };
 
             this.fps = 0;
+            this.timer = 0;
+            this.audio = true;
 
             this.lastTick = 0;
             this.keys = {};
@@ -158,6 +164,9 @@ class Game {
     onKeyDown(event) {
         this.keys[event.keyCode] = true;
         !!this.keys[this.controls.pause] && this.pause();
+        if (!!this.keys[this.controls.sound]) {
+            this.audio = !this.audio;
+        }
     }
 
     onKeyUp(event) {
@@ -188,21 +197,24 @@ class Game {
 
     drawLifes() {
         while (this.layout.life.firstChild) this.layout.life.removeChild(this.layout.life.firstChild);
-        for (var i = 0; i < this.spaceship.life; ++i) {
+        for (let i = 0; i < this.spaceship.life; ++i) {
             this.layout.life.appendChild(this.layout.fullLife.cloneNode(true));
         }
-        for (var i = 0; i < Spaceship.lifes - this.spaceship.life; ++i) {
+        for (let i = 0; i < Spaceship.lifes - this.spaceship.life; ++i) {
             this.layout.life.appendChild(this.layout.emptyLife.cloneNode(true));
         }
     }
 
     update() {
         const timeNow = +Date.now();
+        const scoreNow = this.totalScore;
         if (this.lastTick !== 0) {
             // chaque objet est susceptible de s'animer
             const lifeNow = this.spaceship.life;
 
             const elapsed = timeNow - this.lastTick;
+            this.timer += elapsed;
+
             this.heightfield.update(elapsed, this.keys, this);
             this.background.update(elapsed, this.keys, this);
 
@@ -218,25 +230,36 @@ class Game {
             this.enemyLasers = this.enemyLasers.filter(laser => !laser.update(elapsed, this.keys, this));
             */
 
-            for(var i = 0; i < this.enemies.length; ++i) {
+            for(let i = 0; i < this.enemies.length; ++i) {
                 if (this.enemies[i].update(elapsed, this.keys, this)) {
                     this.enemies.splice(i, 1);
                 }
             }
-            for(var i = 0; i < this.lasers.length; ++i) {
+            for(let i = 0; i < this.lasers.length; ++i) {
                 if (this.lasers[i].update(elapsed, this.keys, this)) {
                     this.lasers.splice(i, 1);
                 }
             }
-            for(var i = 0; i < this.enemyLasers.length; ++i) {
+            for(let i = 0; i < this.enemyLasers.length; ++i) {
                 if (this.enemyLasers[i].update(elapsed, this.keys, this)) {
                     this.enemyLasers.splice(i, 1);
                 }
             }
+            for(let i = 0; i < this.bonus.length; ++i) {
+                if(this.bonus[i].update(elapsed, this.keys, this)) {
+                    this.bonus.splice(i, 1);
+                }
+            }
 
+            //const enemyRate = Math.max(Game.enemyRate - Math.floor(this.timer / 10), 5)
             if(this.ticks > Game.enemyRate) {
                 this.ticks = 0;
                 this.enemies.push(new Enemy(Math.random() - Math.random(), 1.1, Math.random()));
+            }
+
+            if (this.totalScore !== scoreNow && Math.floor(this.totalScore / Game.bonusRate) > Math.floor(scoreNow / Game.bonusRate)) {
+                const type =  Game.bonus[Math.floor(Math.random() * Game.bonus.length)];
+                this.bonus.push(new type(Math.random() - Math.random(), Bonus.verticalSpeed));
             }
 
             if (this.spaceship.life !== lifeNow) {
@@ -271,6 +294,11 @@ class Game {
             this.enemies.forEach(e => e.draw());
         }
 
+        if (this.bonus.length) {
+            gl.useProgram(Bonus.shader);
+            this.bonus.forEach(bonus => bonus.draw());
+        }
+
         if (this.enemyLasers.length) {
             gl.useProgram(EnemyLaser.shader);
             this.enemyLasers.forEach(laser => laser.draw());
@@ -289,3 +317,4 @@ class Game {
 }
 
 Game.enemyRate = 30;
+Game.bonusRate = 1000;

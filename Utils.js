@@ -92,3 +92,13 @@ window.requestAnimationFrame =
     function(/* function FrameRequestCallback */ callback, /* DOMElement Element */ element) {
         window.setTimeout(callback, 1000/60);
     };
+
+function injectColorPicker(container, hook) {
+    const input = document.createElement('input');
+    input.type = 'color';
+    input.addEventListener('change', e => {
+        hook(e.target.value.slice(1).match(/.{2}/g).map(v => +parseInt(v, 16)%256/255))
+    });
+    container.appendChild(input);
+    return input;
+}
