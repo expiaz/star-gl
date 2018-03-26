@@ -14,3 +14,5 @@ class LaserBonus extends Bonus {
 LaserBonus.init = function (textures) {
     LaserBonus.texture = textures[3];
 }
+
+LaserBonus.rate = 3;

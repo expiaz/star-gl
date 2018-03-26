@@ -14,3 +14,5 @@ class FireRateBonus extends Bonus {
 FireRateBonus.init = function (textures) {
     FireRateBonus.texture = textures[4];
 }
+
+FireRateBonus.rate = 3;

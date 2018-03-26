@@ -12,7 +12,6 @@ class Bonus extends Actor {
      * @param globals
      */
     collected(globals) {
-        console.log('collected');
         if (game.audio) {
             this.audio.play();
         }
@@ -72,6 +71,8 @@ Bonus.init = function (textures) {
     LifeBonus.init(textures);
     LaserBonus.init(textures);
     FireRateBonus.init(textures);
+    SpeedBonus.init(textures);
+    InvincibleBonus.init(textures);
 
     Bonus.texture = textures[0];
 

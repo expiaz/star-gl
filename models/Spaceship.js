@@ -5,8 +5,8 @@ class Spaceship extends Actor {
         this.timeElapsedSinceLastFire = +Date.now();
         this.currentAudioTrack = 0;
         this._fireRate = Spaceship.fireRate;
-        this.verticalSpeed = 0.02;
-        this.horizontalSpeed = 0.02;
+        this.verticalSpeed = Spaceship.speed;
+        this.horizontalSpeed = Spaceship.speed;
         this.fireSpeed = 500;
         this._life = Spaceship.lifes;
         this._lasers = Spaceship.lasers;
@@ -50,6 +50,16 @@ class Spaceship extends Actor {
 
     set fireRate(fireRate) {
         this._fireRate = fireRate > Spaceship.MAX_FIRE_RATE ? Spaceship.MAX_FIRE_RATE : fireRate;
+    }
+
+    get speed() {
+      return (this.verticalSpeed + this.horizontalSpeed) / 2;
+    }
+
+    set speed(speed) {
+      const s = speed > Spaceship.MAX_SPEED ? Spaceship.MAX_SPEED : speed;
+      this.verticalSpeed = s;
+      this.horizontalSpeed = s;
     }
 
     hit() {
@@ -166,9 +176,11 @@ class Spaceship extends Actor {
 Spaceship.MAX_LASERS = 8;
 Spaceship.MAX_LIFES = 10;
 Spaceship.MAX_FIRE_RATE = 15;
+Spaceship.MAX_SPEED = 0.06;
 
 Spaceship.lasers = 2;
 Spaceship.fireRate = 5;
+Spaceship.speed = 0.02;
 Spaceship.z = -0.6;
 Spaceship.lifes = 3;
 

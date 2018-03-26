@@ -34,7 +34,16 @@ class Game {
             EnemyLaser.init(textures);
             Bonus.init(textures);
 
-            Game.bonus = [LifeBonus, LaserBonus, FireRateBonus];
+            Game.bonus = Utils.shuffle([
+                LifeBonus,
+                LaserBonus,
+                FireRateBonus,
+                SpeedBonus,
+                InvincibleBonus
+            ].reduce(
+                (all, bonus) => all.concat(new Array(bonus.rate || 1).fill(bonus)),
+                []
+            ));
 
             this.lasers = [];
             this.enemyLasers = [];
@@ -45,6 +54,9 @@ class Game {
             this.spaceship = new Spaceship(0, -0.8);
             this.enemies = [];
             this.bonus = [];
+
+            this.bonsuRate = Game.bonusRate;
+            this.enemyRate = Game.enemyRate;
 
             this.ticks = 0;
 
@@ -218,6 +230,12 @@ class Game {
             this.heightfield.update(elapsed, this.keys, this);
             this.background.update(elapsed, this.keys, this);
 
+            for(let i = 0; i < this.bonus.length; ++i) {
+                if(this.bonus[i].update(elapsed, this.keys, this)) {
+                    this.bonus.splice(i, 1);
+                }
+            }
+
             if (this.spaceship.update(elapsed, this.keys, this)) {
                 // game over no more lifes
                 this.end();
@@ -243,11 +261,6 @@ class Game {
             for(let i = 0; i < this.enemyLasers.length; ++i) {
                 if (this.enemyLasers[i].update(elapsed, this.keys, this)) {
                     this.enemyLasers.splice(i, 1);
-                }
-            }
-            for(let i = 0; i < this.bonus.length; ++i) {
-                if(this.bonus[i].update(elapsed, this.keys, this)) {
-                    this.bonus.splice(i, 1);
                 }
             }
 

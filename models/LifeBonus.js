@@ -6,7 +6,7 @@ class LifeBonus extends Bonus {
 
     collected(globals) {
         super.collected(globals);
-        globals.spaceship.fireRate += 1;
+        globals.spaceship.life += 1;
     }
 
 }
@@ -14,3 +14,5 @@ class LifeBonus extends Bonus {
 LifeBonus.init = function (textures) {
     LifeBonus.texture = textures[19];
 }
+
+LifeBonus.rate = 10;
