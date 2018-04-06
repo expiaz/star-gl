@@ -13,13 +13,13 @@ class Laser extends Actor {
         return Laser.texture;
     }
 
-    update(elapsed, keys, globals) {
-        if (super.update(elapsed, keys, globals)) {
+    update(ticks, keys, globals) {
+        if (super.update(ticks, keys, globals)) {
             return true;
         }
 
         for(var i = 0; i < globals.enemies.length; i++) {
-            if (this.cross(globals.enemies[i])) {
+            if (globals.enemies[i].cross(this)) {
                 globals.enemies[i].die();
                 this.die();
                 globals.score(Enemy.points);
@@ -36,7 +36,7 @@ class Laser extends Actor {
             }
         }
 
-        this.y += elapsed / this.velocity;
+        this.y += globals.timeSpeed * this.velocity;
         return this.y > World.MAX_Y;
     }
 

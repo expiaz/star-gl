@@ -4,12 +4,14 @@ class LifeBonus extends Bonus {
         return LifeBonus.texture;
     }
 
-    collected(globals) {
-        super.collected(globals);
-        globals.spaceship.fireRate += 1;
+    collected(target, globals) {
+        super.collected(target, globals);
+        target.life += Spaceship.lifeBonus;
     }
 
 }
+
+LifeBonus.rate = 5;
 
 LifeBonus.init = function (textures) {
     LifeBonus.texture = textures[19];

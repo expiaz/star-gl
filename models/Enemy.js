@@ -1,18 +1,24 @@
 class Enemy extends Actor {
 
-    constructor(x, y, intervalX) {
+    constructor(x, y, intervalX, lasers = []) {
         super(0.1, 0.1, x, y, Enemy.z);
-        this.timeElapsedSinceLastFire = +Date.now()
-        this.speed = 1500;
-        this.fireRate = 3;
-        this.fireSpeed = 700;
+        // moving speed each frame
+        this.speed = 0.015;
+        // forward speed each frame
+        this.fireSpeed = 0.02;
+        // frames between each fire
+        this.fireRate = 60;
+
+        this._lasers = lasers;
 
         this.interval = [(x - intervalX) % World.MIN_X, (x + intervalX) % World.MAX_X];
         this.phase = Enemy.phase.LEFT;
 
-        this.ticks = 0;
+        this.lastExplosionTick = 0;
+        this.lastFireTick = - 3;
 
-        this.actualTexture = Enemy.texture;
+        this.currentTexture = Enemy.texture;
+        this.currentTextureIndex = 0;
 
         this.deathAudio = new Audio('./son/explosion.mp3');
         this.blasterAudio = [
@@ -28,7 +34,7 @@ class Enemy extends Actor {
     }
 
     texture() {
-        return this.actualTexture;
+        return this.currentTexture;
     }
 
     bounds() {
@@ -47,31 +53,36 @@ class Enemy extends Actor {
         }
     }
 
-    update(elapsed, keys, globals) {
-        super.update(elapsed, keys, globals);
+    cross(other) {
+        if (this.dead) {
+            return false;
+        }
+        return super.cross(other);
+    }
 
-        // const bounds = this.bounds();
+    update(ticks, keys, globals) {
+        super.update(ticks, keys, globals);
 
         if (this.dead) {
-            ++this.ticks;
-            if (this.ticks > Enemy.explosionTextures.length * Enemy.explosionFrame) {
-                this.ticks = 0;
-                return true;
+            if (!this.lastExplosionTick || ticks - this.lastExplosionTick > Enemy.explosionFrame) {
+                if (this.currentTextureIndex === Enemy.explosionTextures.length) {
+                    return true;
+                }
+                this.currentTexture = Enemy.explosionTextures[this.currentTextureIndex];
+                this.lastExplosionTick = ticks;
+                this.currentTextureIndex++;
             }
-            if (this.ticks % Enemy.explosionFrame === 0) {
-                this.actualTexture = Enemy.explosionTextures[(this.ticks / Enemy.explosionFrame) - 1];
-            }
-
             return false;
         }
 
-        if (globals.spaceship.cross(this)) {
+        /*if (globals.spaceship.cross(this)) {
             this.die();
             globals.spaceship.hit();
-            // do not return here, we need to play the explosion animation
-        }
+            // do not return true here, we need to play the explosion animation
+            return false;
+        }*/
 
-        const decrement = elapsed / this.speed;
+        const decrement = globals.timeSpeed * this.speed;
 
         if (this.phase === Enemy.phase.LEFT) {
             if (this.x > this.interval[0]) {
@@ -89,7 +100,7 @@ class Enemy extends Actor {
 
         this.y -= decrement;
 
-        this.fire(globals.enemyLasers);
+        this.fire(ticks);
 
         if (this.y <= World.MIN_Y) {
             // out of bounds, player loss 1k points
@@ -99,21 +110,21 @@ class Enemy extends Actor {
         return this.y <= World.MIN_Y;
     }
 
-    fire(lasers) {
-        const now = +Date.now()
-        const elapsed = now - this.timeElapsedSinceLastFire;
-        if (elapsed > 1 / this.fireRate * 1000) {
-            this.timeElapsedSinceLastFire = now;
-
-            if (game.audio) {
-                const audio = this.blasterAudio[this.currentAudioTrack];
-                audio.currentTime = 0;
-                audio.play();
-                this.currentAudioTrack = ++this.currentAudioTrack % this.blasterAudio.length;
-            }
-
-            lasers.push(new EnemyLaser(this.x, this.y + -0.07, this.fireSpeed));
+    fire(ticks) {
+        if (ticks - this.lastFireTick < this.fireRate) {
+            return;
         }
+
+        this.lastFireTick = ticks;
+
+        if (game.audio) {
+            const audio = this.blasterAudio[this.currentAudioTrack];
+            audio.currentTime = 0;
+            audio.play();
+            this.currentAudioTrack = ++this.currentAudioTrack % this.blasterAudio.length;
+        }
+
+        this._lasers.push(new EnemyLaser(this.x, this.y + -0.07, this.fireSpeed));
     }
 
 }

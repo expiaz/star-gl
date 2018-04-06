@@ -96,12 +96,12 @@ class Actor {
 
     /**
      *
-     * @param {Number} elapsed
+     * @param {Number} ticks
      * @param {Object} keys
      * @param {Game} globals
      * @return {Boolean} is out of bounds or not
      */
-    update(elapsed, keys, globals) {
+    update(ticks, keys, globals) {
         this._updateHibox();
         return this.dead;
     }

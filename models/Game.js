@@ -34,7 +34,15 @@ class Game {
             EnemyLaser.init(textures);
             Bonus.init(textures);
 
-            Game.bonus = [LifeBonus, LaserBonus, FireRateBonus];
+            Game.bonus = Utils.shuffle([
+                LifeBonus,
+                LaserBonus,
+                SpeedBonus,
+                TimeBonus,
+            ].reduce(
+                (all, bonus) => all.concat(new Array(bonus.rate || 1).fill(bonus)),
+                []
+            ));
 
             this.lasers = [];
             this.enemyLasers = [];
@@ -42,29 +50,30 @@ class Game {
             this.fbo = new FBO(canvas.width, canvas.height, 1, false);
             this.heightfield = new Heightfield();
             this.background = new Background(this.fbo.texture(0));
-            this.spaceship = new Spaceship(0, -0.8);
             this.enemies = [];
             this.bonus = [];
+            this.spaceships = [];
 
+            this.fps = 0;
+            // used to accelerate or diminize moving objects (and game speed)
+            this.timeSpeed = 1;
             this.ticks = 0;
+            this.totalScore = 0;
 
+            this.timer = Date.now();
+
+            this.keys = {};
             this.controls = {
                 pause: 'P'.charCodeAt(0),
                 sound: 'M'.charCodeAt(0)
             };
 
-            this.fps = 0;
-            this.timer = 0;
-            this.audio = true;
-
-            this.lastTick = 0;
-            this.keys = {};
-
+            this.audio = false;
             this.paused = false;
             this.ended = false;
             this.started = false;
 
-            this.totalScore = 0;
+
             this.scoreBoard = JSON.parse(localStorage.getItem('star-gl') || '[]');
 
             this.layout = {
@@ -76,9 +85,11 @@ class Game {
                 upscore: document.querySelector('.game-layout .upscore'),
                 start: document.querySelector('.game-layout .start-screen'),
                 end: document.querySelector('.game-layout .end-screen'),
+                game: document.querySelector('.game-layout .game-screen')
             };
 
             this.layout.layout.removeChild(this.layout.upscore);
+            this.lifes = new Lifes(Spaceship.lifes, Spaceship.MAX_LIFES);
             this.drawLifes();
 
             // la couleur de fond sera noire
@@ -91,7 +102,7 @@ class Game {
 
             window.addEventListener('keydown', this.onKeyDown.bind(this));
             window.addEventListener('keyup', this.onKeyUp.bind(this));
-            window.addEventListener('click', _ => {
+            window.addEventListener('click', () => {
                 if (false === this.started) {
                     this.start();
                 } else if (this.ended === true) {
@@ -111,12 +122,16 @@ class Game {
         this.started = true;
         this.layout.start.style.opacity = '0';
 
+        this.spaceships.push(new J1(0, -0.8, this.lifes, this.lasers));
+
         setInterval(() => {
             console.log(this.fps);
             this.fps = 0;
         }, 1000);
 
         this.tick();
+
+        this.bonus.push(new Formation(0, 3, this.enemies));
     }
 
     end() {
@@ -155,7 +170,6 @@ class Game {
     pause() {
         this.paused = !this.paused;
         if (false === this.paused) {
-            this.lastTick = +Date.now();
             requestAnimationFrame(this.tick);
         }
         return this.paused;
@@ -176,7 +190,6 @@ class Game {
     tick() {
         if (this.paused) return;
         ++this.fps;
-
         ++this.ticks;
         this.draw();
         this.update();
@@ -197,76 +210,81 @@ class Game {
 
     drawLifes() {
         while (this.layout.life.firstChild) this.layout.life.removeChild(this.layout.life.firstChild);
-        for (let i = 0; i < this.spaceship.life; ++i) {
+        const left = this.lifes.left;
+        const loss = this.lifes.loss;
+        for (let i = 0; i < left; ++i) {
             this.layout.life.appendChild(this.layout.fullLife.cloneNode(true));
         }
-        for (let i = 0; i < Spaceship.lifes - this.spaceship.life; ++i) {
+        for (let i = 0; i < loss; ++i) {
             this.layout.life.appendChild(this.layout.emptyLife.cloneNode(true));
         }
     }
 
     update() {
-        const timeNow = +Date.now();
+
+        // keep the actual score for playing animations only when score change
         const scoreNow = this.totalScore;
-        if (this.lastTick !== 0) {
-            // chaque objet est susceptible de s'animer
-            const lifeNow = this.spaceship.life;
+        const lifeNow = this.lifes.left;
 
-            const elapsed = timeNow - this.lastTick;
-            this.timer += elapsed;
+        // ticks relative to the time speed
+        const relativeTicks = this.ticks * this.timeSpeed;
 
-            this.heightfield.update(elapsed, this.keys, this);
-            this.background.update(elapsed, this.keys, this);
+        this.heightfield.update(relativeTicks, this.keys, this);
+        this.background.update(relativeTicks, this.keys, this);
 
-            if (this.spaceship.update(elapsed, this.keys, this)) {
+        let i;
+
+        i = this.spaceships.length;
+        while (i--) {
+            if (this.spaceships[i].update(relativeTicks, this.keys, this)) {
                 // game over no more lifes
                 this.end();
                 return;
             }
+        }
 
-            /*
-            this.enemies = this.enemies.filter(e => !e.update(elapsed, this.keys, this));
-            this.lasers = this.lasers.filter(laser => !laser.update(elapsed, this.keys, this));
-            this.enemyLasers = this.enemyLasers.filter(laser => !laser.update(elapsed, this.keys, this));
-            */
-
-            for(let i = 0; i < this.enemies.length; ++i) {
-                if (this.enemies[i].update(elapsed, this.keys, this)) {
-                    this.enemies.splice(i, 1);
-                }
-            }
-            for(let i = 0; i < this.lasers.length; ++i) {
-                if (this.lasers[i].update(elapsed, this.keys, this)) {
-                    this.lasers.splice(i, 1);
-                }
-            }
-            for(let i = 0; i < this.enemyLasers.length; ++i) {
-                if (this.enemyLasers[i].update(elapsed, this.keys, this)) {
-                    this.enemyLasers.splice(i, 1);
-                }
-            }
-            for(let i = 0; i < this.bonus.length; ++i) {
-                if(this.bonus[i].update(elapsed, this.keys, this)) {
-                    this.bonus.splice(i, 1);
-                }
-            }
-
-            //const enemyRate = Math.max(Game.enemyRate - Math.floor(this.timer / 10), 5)
-            if(this.ticks > Game.enemyRate) {
-                this.ticks = 0;
-                this.enemies.push(new Enemy(Math.random() - Math.random(), 1.1, Math.random()));
-            }
-
-            if (this.totalScore !== scoreNow && Math.floor(this.totalScore / Game.bonusRate) > Math.floor(scoreNow / Game.bonusRate)) {
-                const type =  Game.bonus[Math.floor(Math.random() * Game.bonus.length)];
-                this.bonus.push(new type(Math.random() - Math.random(), Bonus.verticalSpeed));
-            }
-
-            if (this.spaceship.life !== lifeNow) {
-                this.drawLifes();
+        i = this.enemies.length;
+        while (i--) {
+            if (this.enemies[i].update(relativeTicks, this.keys, this)) {
+                this.enemies.splice(i, 1);
             }
         }
-        this.lastTick = timeNow;
+
+        i = this.lasers.length;
+        while (i--) {
+            if (this.lasers[i].update(relativeTicks, this.keys, this)) {
+                this.lasers.splice(i, 1);
+            }
+        }
+
+        i = this.enemyLasers.length;
+        while (i--) {
+            if (this.enemyLasers[i].update(relativeTicks, this.keys, this)) {
+                this.enemyLasers.splice(i, 1);
+            }
+        }
+
+        i = this.bonus.length;
+        while (i--) {
+            if (this.bonus[i].update(relativeTicks, this.keys, this)) {
+                this.bonus.splice(i, 1);
+            }
+        }
+
+        //const enemyRate = Math.max(Game.enemyRate - Math.floor(this.timer / 10), 5)
+        if(0 === relativeTicks % Game.enemyRate) {
+            this.enemies.push(new Enemy(Math.random() - Math.random(), 1.1, Math.random(), this.enemyLasers));
+        }
+
+        if (this.totalScore !== scoreNow
+            && Math.floor(this.totalScore / Game.bonusRate) > Math.floor(scoreNow / Game.bonusRate)) {
+            const type =  Game.bonus[Math.floor(Math.random() * Game.bonus.length)];
+            this.bonus.push(new type(Math.random() - Math.random(), Bonus.verticalSpeed));
+        }
+
+        if (this.lifes.left !== lifeNow) {
+            this.drawLifes();
+        }
     }
 
     draw() {
@@ -291,26 +309,36 @@ class Game {
         //dessin des ennemis
         if (this.enemies.length) {
             gl.useProgram(Enemy.shader);
-            this.enemies.forEach(e => e.draw());
+            for (let i = 0; i < this.enemies.length; ++i) {
+                this.enemies[i].draw();
+            }
         }
 
         if (this.bonus.length) {
             gl.useProgram(Bonus.shader);
-            this.bonus.forEach(bonus => bonus.draw());
+            for (let i = 0; i < this.bonus.length; ++i) {
+                this.bonus[i].draw();
+            }
         }
 
         if (this.enemyLasers.length) {
             gl.useProgram(EnemyLaser.shader);
-            this.enemyLasers.forEach(laser => laser.draw());
+            for (let i = 0; i < this.enemyLasers.length; ++i) {
+                this.enemyLasers[i].draw();
+            }
         }
 
         // dessin du vaisseau (shader par defaut ici)
         gl.useProgram(Spaceship.shader);
-        this.spaceship.draw();
+        for (let i = 0; i < this.spaceships.length; ++i) {
+            this.spaceships[i].draw();
+        }
 
         if (this.lasers.length) {
             gl.useProgram(Laser.shader);
-            this.lasers.forEach(laser => laser.draw());
+            for (let i = 0; i < this.lasers.length; ++i) {
+                this.lasers[i].draw();
+            }
         }
     }
 

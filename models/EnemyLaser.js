@@ -13,19 +13,19 @@ class EnemyLaser extends Actor {
         return EnemyLaser.texture;
     }
 
-    update(elapsed, keys, globals) {
-        if (super.update(elapsed, keys, globals)) {
+    update(ticks, keys, globals) {
+        if (super.update(ticks, keys, globals)) {
             return true;
         }
 
-        if (globals.spaceship.cross(this)) {
+        /*if (globals.spaceship.cross(this)) {
             this.die();
             globals.spaceship.hit();
             globals.score(- EnemyLaser.points * 2);
             return true;
-        }
+        }*/
 
-        this.y -= elapsed / this.velocity;
+        this.y -= globals.timeSpeed * this.velocity;
         return this.y < World.MIN_Y;
     }
 

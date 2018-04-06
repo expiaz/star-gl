@@ -9,11 +9,11 @@ class Bonus extends Actor {
 
     /**
      * called when a bonus is collected
-     * @param globals
+     * @param {Spaceship} target
+     * @param {Game} globals
      */
-    collected(globals) {
-        console.log('collected');
-        if (game.audio) {
+    collected(target, globals) {
+        if (globals.audio) {
             this.audio.play();
         }
         this.activated = true;
@@ -21,12 +21,12 @@ class Bonus extends Actor {
 
     /**
      *
-     * @param elapsed
+     * @param ticks
      * @param keys
      * @param globals
      * @return {boolean} shouldn't be updated anymore (bonus ended)
      */
-    active(elapsed, keys, globals) {
+    active(ticks, keys, globals) {
         return true;
     }
 
@@ -38,19 +38,21 @@ class Bonus extends Actor {
         return Bonus.texture;
     }
 
-    update(elapsed, keys, globals) {
-        super.update(elapsed, keys, globals);
+    update(ticks, keys, globals) {
+        super.update(ticks, keys, globals);
 
         if(this.activated) {
-            return this.active(elapsed, keys, globals);
+            return this.active(ticks, keys, globals);
         }
 
-        if (globals.spaceship.cross(this)) {
-            this.collected(globals);
-            return false; // do not remove the bonus, just don't draw it anymore
+        for (let i = 0; i < globals.spaceships.length; ++i) {
+            if (this.cross(globals.spaceships[i])) {
+                this.collected(globals.spaceships[i], globals);
+                return false;  // do not remove the bonus, just don't draw it anymore
+            }
         }
 
-        this.y -= elapsed / this.velocity;
+        this.y -= globals.timeSpeed * this.velocity;
         return this.y < World.MIN_Y;
     }
 
@@ -65,13 +67,14 @@ class Bonus extends Actor {
 
 Bonus.z = -0.5;
 
-Bonus.verticalSpeed = 1000;
+Bonus.verticalSpeed = 0.02;
 
 Bonus.init = function (textures) {
 
     LifeBonus.init(textures);
     LaserBonus.init(textures);
-    FireRateBonus.init(textures);
+    SpeedBonus.init(textures);
+    TimeBonus.init(textures);
 
     Bonus.texture = textures[0];
 

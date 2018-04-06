@@ -24,6 +24,7 @@ body {
     align-items: center;
     justify-content: center;
     margin: auto;
+    overflow: hidden;
 }
 
 .game-wrapper {
@@ -131,4 +132,17 @@ body {
     top: 0px;
     left: 150px;
     font-size: 20px;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.rotate-screen {
+    animation: rotate 10s;
 }

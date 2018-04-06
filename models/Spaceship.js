@@ -1,18 +1,34 @@
 class Spaceship extends Actor {
 
-    constructor(x, y) {
+    /**
+     *
+     * @param x
+     * @param y
+     * @param {Lifes} lifes
+     * @param {Array<Laser>} lasers
+     */
+    constructor(x, y, lifes, lasers = [], controls = {
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        fire: 0
+    }) {
         super(0.2, 0.2, x, y, Spaceship.z);
-        this.timeElapsedSinceLastFire = +Date.now();
+
+        this.lastFireTick = - Spaceship.fireRate;
         this.currentAudioTrack = 0;
+        this.verticalSpeed = Spaceship.speed;
+        this.horizontalSpeed = Spaceship.speed;
+
+        this.fireSpeed = Spaceship.fireSpeed;
         this._fireRate = Spaceship.fireRate;
-        this.verticalSpeed = 0.02;
-        this.horizontalSpeed = 0.02;
-        this.fireSpeed = 500;
-        this._life = Spaceship.lifes;
-        this._lasers = Spaceship.lasers;
+        this._nbLasers = Spaceship.lasers;
+        this._life = lifes;
+        this._lasers = lasers;
 
+        this.controls = controls;
         this.flicker = 0;
-
         this.currentTexture = Spaceship.texture;
     }
 
@@ -29,19 +45,19 @@ class Spaceship extends Actor {
     }
 
     get lasers() {
-        return this._lasers;
+        return this._nbLasers;
     }
 
     set lasers(lasers) {
-        this._lasers = lasers > Spaceship.MAX_LASERS ? Spaceship.MAX_LASERS : lasers;
+        this._nbLasers = lasers > Spaceship.MAX_LASERS ? Spaceship.MAX_LASERS : lasers;
     }
 
     get life() {
-        return this._life;
+        return this._life.lifes;
     }
 
     set life(life) {
-        this._life = life % Spaceship.MAX_LIFES;
+        this._life.lifes = life;
     }
 
     get fireRate() {
@@ -49,7 +65,17 @@ class Spaceship extends Actor {
     }
 
     set fireRate(fireRate) {
-        this._fireRate = fireRate > Spaceship.MAX_FIRE_RATE ? Spaceship.MAX_FIRE_RATE : fireRate;
+        this._fireRate = fireRate < Spaceship.MAX_FIRE_RATE ? Spaceship.MAX_FIRE_RATE : fireRate;
+    }
+
+    get speed() {
+        return (this.verticalSpeed + this.horizontalSpeed) / 2;
+    }
+
+    set speed(speed) {
+        const s = speed > Spaceship.MAX_SPEED ? Spaceship.MAX_SPEED : speed;
+        this.verticalSpeed = s;
+        this.horizontalSpeed = s;
     }
 
     hit() {
@@ -58,19 +84,10 @@ class Spaceship extends Actor {
             this.die()
         }
         this.flicker = 100;
-        // TODO update lifes
     }
 
-    /**
-     *
-     * @param {Number} elapsed
-     * @param {Object} keys
-     * @param {Game} globals
-     * @return {Boolean} is out of bounds or not
-     */
-    update(elapsed, keys, globals) {
-
-        if (super.update(elapsed, keys, globals)) {
+    update(ticks, keys, globals) {
+        if (super.update(ticks, keys, globals)) {
             // dead by another object
             return true;
         }
@@ -85,41 +102,59 @@ class Spaceship extends Actor {
                 }
             }
             --this.flicker;
+        } else {
+            for(let i = 0; i < globals.enemies.length; ++i) {
+                if (this.cross(globals.enemies[i])) {
+                    this.hit();
+                    globals.enemies[i].die();
+                }
+            }
+
+            for(let i = 0; i < globals.enemyLasers.length; ++i) {
+                if (this.cross(globals.enemyLasers[i])) {
+                    this.hit();
+                    globals.enemyLasers[i].die();
+                    globals.score(- EnemyLaser.points * 2);
+                }
+            }
         }
 
         const bounds = this.bounds();
 
-        if (keys[81]) { // left arrow
-            let nextX = this.x - this.horizontalSpeed;
+        const horizontalSpeed = this.horizontalSpeed/* * globals.timeSpeed*/;
+        const verticalSpeed = this.verticalSpeed/* * globals.timeSpeed*/;
+
+        if (keys[this.controls.left]) { // left arrow
+            let nextX = this.x - horizontalSpeed;
             if (nextX < bounds.left) {
                 nextX = bounds.left;
             }
             this.x = nextX;
         }
-        if (keys[68]) { // right arrow
-            let nextX = this.x + this.horizontalSpeed;
+        if (keys[this.controls.right]) { // right arrow
+            let nextX = this.x + horizontalSpeed;
             if (nextX > bounds.right) {
                 nextX = bounds.right;
             }
             this.x = nextX;
         }
-        if (keys[90]) { // up arrow
-            let nextY = this.y + this.verticalSpeed;
+        if (keys[this.controls.top]) { // up arrow
+            let nextY = this.y + verticalSpeed;
             if (nextY > bounds.top) {
                 nextY = bounds.top;
             }
             this.y = nextY;
         }
-        if (keys[83]) { // down arrow
-            let nextY = this.y - this.verticalSpeed;
+        if (keys[this.controls.bottom]) { // down arrow
+            let nextY = this.y - verticalSpeed;
             if (nextY < bounds.bottom) {
                 nextY = bounds.bottom;
             }
             this.y = nextY;
         }
 
-        if (keys[32]) { // space
-            this.fire(globals.lasers);
+        if (keys[this.controls.fire]) { // space
+            this.fire(ticks);
         }
 
         return false;
@@ -134,30 +169,34 @@ class Spaceship extends Actor {
         return super.cross(other);
     }
 
-    /**
-     *
-     * @param {Array<Laser>} lasers
-     */
-    fire(lasers) {
-        const now = +Date.now()
-        const elapsed = now - this.timeElapsedSinceLastFire;
-        if (elapsed > 1 / this.fireRate * 1000) {
-            this.timeElapsedSinceLastFire = now;
+    fire(ticks) {
+        if (ticks - this.lastFireTick < this._fireRate) {
+            return;
+        }
 
-            if (game.audio) {
-                const audio = Spaceship.audio[this.currentAudioTrack];
-                audio.currentTime = 0;
-                audio.play();
-                this.currentAudioTrack = ++this.currentAudioTrack % Spaceship.audio.length;
-            }
+        this.lastFireTick = ticks;
 
-            const ll = this.lasers / 2;
-            for (var i = 0; i < ll; i++) {
-                const y = this.y + 0.1;
-                const offset = 0.03 * i;
-                lasers.push(new Laser(this.x - 0.093 /* this.width / 2.8 */ + offset, y /*this.height / 2*/, this.fireSpeed));
-                lasers.push(new Laser(this.x + 0.093 /* this.width / 2.8 */ - offset, y /*this.height / 2*/, this.fireSpeed));
-            }
+        if (game.audio) {
+            const audio = Spaceship.audio[this.currentAudioTrack];
+            audio.currentTime = 0;
+            audio.play();
+            this.currentAudioTrack = ++this.currentAudioTrack % Spaceship.audio.length;
+        }
+
+        const ll = this.lasers / 2;
+        for (var i = 0; i < ll; i++) {
+            const y = this.y + 0.1;
+            const offset = 0.03 * i;
+            this._lasers.push(new Laser(
+                this.x - 0.093 /* this.width / 2.8 */ + offset,
+                y /*this.height / 2*/,
+                this.fireSpeed
+            ));
+            this._lasers.push(new Laser(
+                this.x + 0.093 /* this.width / 2.8 */ - offset,
+                y /*this.height / 2*/,
+                this.fireSpeed
+            ));
         }
     }
 
@@ -165,12 +204,21 @@ class Spaceship extends Actor {
 
 Spaceship.MAX_LASERS = 8;
 Spaceship.MAX_LIFES = 10;
-Spaceship.MAX_FIRE_RATE = 15;
+Spaceship.MAX_FIRE_RATE = 5;
+Spaceship.MAX_SPEED = 0.05;
 
+Spaceship.speed = 0.02;
 Spaceship.lasers = 2;
-Spaceship.fireRate = 5;
-Spaceship.z = -0.6;
+Spaceship.fireRate = 20;
+Spaceship.fireSpeed = 0.03;
 Spaceship.lifes = 3;
+Spaceship.z = -0.6;
+
+Spaceship.fireRateBonus = -5;
+Spaceship.lasersBonus = 2;
+Spaceship.fireSpeedBonus = 0.01;
+Spaceship.speedBonus = 0.02;
+Spaceship.lifeBonus = 1;
 
 Spaceship.init = function (textures) {
 

@@ -63,9 +63,7 @@ class Background {
         return this.heightFieldTexture
     }
 
-    update(elapsed, keys) {
-
-    }
+    update(ticks, keys, globals) {}
 
     sendUniforms(shader) {
         gl.uniform2fv(shader.textureSizeUniform, [

@@ -102,3 +102,66 @@ function injectColorPicker(container, hook) {
     container.appendChild(input);
     return input;
 }
+
+/**
+ *
+ * @param {Array} array
+ * @return {Array}
+ */
+Utils.shuffle = function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+};
+
+const pair = x => !(x % 2);
+
+class Lifes {
+
+    constructor(lifes = 3, max = 10) {
+        this._lifes = lifes;
+        this._max = lifes;
+        this.cap = max;
+    }
+
+    get max() {
+        return this._max;
+    }
+
+    get lifes() {
+        return this._lifes;
+    }
+
+    set lifes(lifes) {
+        if (lifes < 0) {
+            this._lifes = 0;
+        } else {
+            this._lifes = lifes > this.cap ? this.cap : lifes;
+        }
+        if (this._lifes > this._max) {
+            this._max = this._lifes;
+        }
+    }
+
+    get loss() {
+        return this._max - this._lifes;
+    }
+
+    get left() {
+        return this._lifes;
+    }
+
+}

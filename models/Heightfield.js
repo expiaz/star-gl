@@ -48,13 +48,12 @@ class Heightfield {
         return Heightfield.shader;
     }
 
-    update(elapsed, keys, globals) {
-        // this.timer = this.timer+elapsed*0.0004;
-        const timer = globals.timer * 0.0004;
-        const speed = 2.0*(Math.sin(timer*0.1)*0.5+0.5);
-        this.offset[1] = this.offset[1]+elapsed*0.0004*speed;
-        this.amplitude = 0.2+3.0*(Math.sin(timer*0.1)*0.5+0.5);
-        this.frequency = 5.0-speed;
+    update(ticks, keys, globals) {
+        const timer = ticks * 0.008;
+        const speed = 2.0 * (Math.sin(timer * 0.1) * 0.5 + 0.5);
+        this.offset[1] = this.offset[1] + 0.008 * speed;
+        this.amplitude = 0.2 + 3.0 * (Math.sin(timer * 0.1) * 0.5 + 0.5);
+        this.frequency = 5.0 - speed;
     }
 
     sendUniforms(shader) {
@@ -118,8 +117,8 @@ Heightfield.init = function () {
         
         float hash(vec2 p) {
           // pseudo random fonction
-          float h = dot(mod(p,vec2(100.0)),vec2(127.1,311.7));
-          return -1.0 + 2.0*fract(sin(h)*43758.5453123);
+          float h = dot( mod(p, vec2(100.0)), vec2(127.1,311.7));
+          return -1.0 + 2.0 * fract( sin(h) * 43758.5453123);
         }
         
         float vnoise(in vec2 p) {
@@ -128,12 +127,12 @@ Heightfield.init = function () {
           vec2 i = floor(p);
           vec2 f = fract(p);
         
-          vec2 u = f*f*(3.0-2.0*f);
+          vec2 u = f * f * (3.0 - 2.0 * f);
         
           return mix( mix( hash( i + vec2(0.0,0.0) ),
           hash( i + vec2(1.0,0.0) ), u.x),
-          mix( hash( i + vec2(0.0,1.0) ),
-          hash( i + vec2(1.0,1.0) ), u.x), u.y);
+          mix( hash( i + vec2(0.0, 1.0) ),
+          hash( i + vec2(1.0, 1.0) ), u.x), u.y);
         }
         
         float fractalNoise(in vec2 p) {
@@ -143,19 +142,19 @@ Heightfield.init = function () {
           float e = uPersistence; // persistence
         
           float n = 0.0;
-          for(int i=0;i<nb;++i) {
-            n = n + a*vnoise(p*f);
-            f = 2.0*f;
-            a = a*e;
+          for(int i = 0; i < nb; ++i) {
+            n = n + a * vnoise(p * f);
+            f = 2.0 * f;
+            a = a * e;
           }
           return n;
         }
         
         void main(void) {
-          vec2 p = vTextureCoord*2.0-vec2(1.0); // coordonnees
-          float n = fractalNoise(p+uOffset)*0.5+0.5; // bruit
+          vec2 p = vTextureCoord * 2.0 - vec2(1.0); // coordonnees
+          float n = fractalNoise(p + uOffset) * 0.5 + 0.5; // bruit
         
-          gl_FragColor = vec4(vec3(n),1.0);
+          gl_FragColor = vec4(vec3(n), 1.0);
         }
     `);
 
