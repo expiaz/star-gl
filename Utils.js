@@ -93,7 +93,7 @@ window.requestAnimationFrame =
         window.setTimeout(callback, 1000/60);
     };
 
-function injectColorPicker(container, hook) {
+Utils.injectColorPicker = function injectColorPicker(container, hook) {
     const input = document.createElement('input');
     input.type = 'color';
     input.addEventListener('change', e => {

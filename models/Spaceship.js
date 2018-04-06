@@ -78,6 +78,16 @@ class Spaceship extends Actor {
         this.horizontalSpeed = s;
     }
 
+    get speed() {
+      return (this.verticalSpeed + this.horizontalSpeed) / 2;
+    }
+
+    set speed(speed) {
+      const s = speed > Spaceship.MAX_SPEED ? Spaceship.MAX_SPEED : speed;
+      this.verticalSpeed = s;
+      this.horizontalSpeed = s;
+    }
+
     hit() {
         this.life -= 1;
         if (0 === this.life) {

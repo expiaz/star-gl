@@ -75,6 +75,7 @@ Bonus.init = function (textures) {
     LaserBonus.init(textures);
     SpeedBonus.init(textures);
     TimeBonus.init(textures);
+    InvincibleBonus.init(textures);
 
     Bonus.texture = textures[0];
 

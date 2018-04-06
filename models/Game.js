@@ -57,6 +57,8 @@ class Game {
             this.fps = 0;
             // used to accelerate or diminize moving objects (and game speed)
             this.timeSpeed = 1;
+            this.bonsuRate = Game.bonusRate;
+            this.enemyRate = Game.enemyRate;
             this.ticks = 0;
             this.totalScore = 0;
 

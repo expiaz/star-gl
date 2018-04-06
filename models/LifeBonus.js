@@ -16,3 +16,5 @@ LifeBonus.rate = 5;
 LifeBonus.init = function (textures) {
     LifeBonus.texture = textures[19];
 }
+
+LifeBonus.rate = 10;
