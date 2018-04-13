@@ -1,7 +1,7 @@
 class EnemyLaser extends Actor {
 
     constructor(x, y, velocity, width = 0.02, height = 0.066) {
-        super(width, height, x, y, EnemyLaser.z);
+        super(width, height, x, y, options.enemy.lasers.z);
         this.velocity = velocity;
     }
 
@@ -18,22 +18,11 @@ class EnemyLaser extends Actor {
             return true;
         }
 
-        /*if (globals.spaceship.cross(this)) {
-            this.die();
-            globals.spaceship.hit();
-            globals.score(- EnemyLaser.points * 2);
-            return true;
-        }*/
-
         this.y -= globals.timeSpeed * this.velocity;
         return this.y < World.MIN_Y;
     }
 
 }
-
-EnemyLaser.points = 10;
-
-EnemyLaser.z = -0.8;
 
 EnemyLaser.init = function (textures) {
 

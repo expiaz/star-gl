@@ -1,7 +1,7 @@
 class Laser extends Actor {
 
     constructor(x, y, velocity, width = 0.03, height = 0.1) {
-        super(width, height, x, y, Laser.z);
+        super(width, height, x, y, options.spaceship.lasers.z);
         this.velocity = velocity;
     }
 
@@ -18,20 +18,20 @@ class Laser extends Actor {
             return true;
         }
 
-        for(var i = 0; i < globals.enemies.length; i++) {
+        for(let i = 0; i < globals.enemies.length; i++) {
             if (globals.enemies[i].cross(this)) {
                 globals.enemies[i].die();
                 this.die();
-                globals.score(Enemy.points);
+                globals.score(options.enemy.points);
                 return true;
             }
         }
 
-        for(var i = 0; i < globals.enemyLasers.length; i++) {
+        for(let i = 0; i < globals.enemyLasers.length; i++) {
             if (this.cross(globals.enemyLasers[i])) {
                 globals.enemyLasers[i].die();
                 this.die();
-                globals.score(EnemyLaser.points);
+                globals.score(options.enemy.lasers.points);
                 return true;
             }
         }
@@ -41,8 +41,6 @@ class Laser extends Actor {
     }
 
 }
-
-Laser.z = -0.8;
 
 Laser.init = function (textures) {
 
@@ -77,4 +75,4 @@ Laser.init = function (textures) {
           gl_FragColor = texture2D(uTexture, vTextureCoord);
         }
     `);
-}
+};

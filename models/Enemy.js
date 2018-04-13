@@ -1,13 +1,13 @@
 class Enemy extends Actor {
 
     constructor(x, y, intervalX, lasers = []) {
-        super(0.1, 0.1, x, y, Enemy.z);
+        super(0.1, 0.1, x, y, options.enemy.z);
         // moving speed each frame
-        this.speed = 0.015;
+        this.speed = options.enemy.speed;
         // forward speed each frame
-        this.fireSpeed = 0.02;
+        this.fireSpeed = options.enemy.lasers.speed;
         // frames between each fire
-        this.fireRate = 60;
+        this.fireRate = options.enemy.lasers.rate;
 
         this._lasers = lasers;
 
@@ -15,7 +15,7 @@ class Enemy extends Actor {
         this.phase = Enemy.phase.LEFT;
 
         this.lastExplosionTick = 0;
-        this.lastFireTick = - 3;
+        this.lastFireTick = 0;
 
         this.currentTexture = Enemy.texture;
         this.currentTextureIndex = 0;
@@ -39,10 +39,10 @@ class Enemy extends Actor {
 
     bounds() {
         return {
-            right: this.interval[0] - this.width/2,
-            left: this.interval[1] + this.width/2,
-            top: World.MAX_Y - this.height/2,
-            bottom: World.MIN_Y + this.height/2
+            right: this.interval[0] - this.width / 2,
+            left: this.interval[1] + this.width / 2,
+            top: World.MAX_Y - this.height / 2,
+            bottom: World.MIN_Y + this.height / 2
         };
     }
 
@@ -64,7 +64,7 @@ class Enemy extends Actor {
         super.update(ticks, keys, globals);
 
         if (this.dead) {
-            if (!this.lastExplosionTick || ticks - this.lastExplosionTick > Enemy.explosionFrame) {
+            if (!this.lastExplosionTick || ticks - this.lastExplosionTick > options.enemy.explosion) {
                 if (this.currentTextureIndex === Enemy.explosionTextures.length) {
                     return true;
                 }
@@ -74,13 +74,6 @@ class Enemy extends Actor {
             }
             return false;
         }
-
-        /*if (globals.spaceship.cross(this)) {
-            this.die();
-            globals.spaceship.hit();
-            // do not return true here, we need to play the explosion animation
-            return false;
-        }*/
 
         const decrement = globals.timeSpeed * this.speed;
 
@@ -104,7 +97,7 @@ class Enemy extends Actor {
 
         if (this.y <= World.MIN_Y) {
             // out of bounds, player loss 1k points
-            globals.score(- Enemy.points * 2);
+            globals.score(-options.enemy.points * 2);
         }
 
         return this.y <= World.MIN_Y;
@@ -124,21 +117,15 @@ class Enemy extends Actor {
             this.currentAudioTrack = ++this.currentAudioTrack % this.blasterAudio.length;
         }
 
-        this._lasers.push(new EnemyLaser(this.x, this.y + -0.07, this.fireSpeed));
+        this._lasers.push(new EnemyLaser(this.x, this.y - 0.07, this.fireSpeed));
     }
 
 }
-
-Enemy.points = 100;
 
 Enemy.phase = {
     RIGHT: 0,
     LEFT: 1
 };
-
-Enemy.explosionFrame = 5;
-
-Enemy.z = -0.5;
 
 Enemy.init = function (textures) {
 
@@ -161,7 +148,7 @@ Enemy.init = function (textures) {
           // stockage de la coordonnee de texture
           vTextureCoord = aTextureCoord;
         }
-    `,`
+    `, `
         // *** le fragment shader ***
         precision highp float; // precision des nombres flottant
 

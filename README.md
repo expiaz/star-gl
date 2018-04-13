@@ -14,9 +14,7 @@ une simplicité d'implémentation de nouveaux acteurs.
 - ajout de la structure HTML pour le layout
 - ajout du score, des controles et des vies
 - ajout de l'écran de début et de fin
-### TODO
-- sprite enemyLaser
-- sprite alpha 50% vaisseau touché
-- sprite vies vaisseau (coeurs)
-- css layout score, controles
-- niveaux ? bonus ?
+
+## 13/04/18 - Rémi - Commentaires + Options globals
+- Game.js, Actor.js, Bonus.js commentés
+- options.js contient toutes les options du jeu

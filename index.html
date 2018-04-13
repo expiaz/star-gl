@@ -8,6 +8,7 @@
     <script type="text/javascript" src="gl-matrix.js"></script>
     <script type="text/javascript" src="fbo.js"></script>
     <script type="text/javascript" src="Utils.js"></script>
+    <script type="text/javascript" src="options.js"></script>
     <script type="text/javascript" src="models/Game.js"></script>
     <script type="text/javascript" src="models/World.js"></script>
     <script type="text/javascript" src="models/Heightfield.js"></script>
@@ -75,15 +76,9 @@
 <script type="text/javascript">
 
     document.addEventListener('DOMContentLoaded', e => {
-
-      function webGLStart() {
-          const canvas = document.getElementById("game");
-          const game = new Game(canvas);
-          window.game = game;
-      }
-
-      webGLStart();
-
+        const canvas = document.getElementById("game");
+        const game = new Game(canvas);
+        window.game = game;
     });
 
 </script>

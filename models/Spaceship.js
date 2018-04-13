@@ -4,8 +4,9 @@ class Spaceship extends Actor {
      *
      * @param x
      * @param y
-     * @param {Lifes} lifes
+     * @param {Utils.Lifes} lifes
      * @param {Array<Laser>} lasers
+     * @param {Object} controls
      */
     constructor(x, y, lifes, lasers = [], controls = {
         left: 0,
@@ -14,16 +15,16 @@ class Spaceship extends Actor {
         bottom: 0,
         fire: 0
     }) {
-        super(0.2, 0.2, x, y, Spaceship.z);
+        super(0.2, 0.2, x, y, options.spaceship.z);
 
-        this.lastFireTick = - Spaceship.fireRate;
+        this.lastFireTick = 0;
         this.currentAudioTrack = 0;
-        this.verticalSpeed = Spaceship.speed;
-        this.horizontalSpeed = Spaceship.speed;
+        this.verticalSpeed = options.spaceship.speed;
+        this.horizontalSpeed = options.spaceship.speed;
 
-        this.fireSpeed = Spaceship.fireSpeed;
-        this._fireRate = Spaceship.fireRate;
-        this._nbLasers = Spaceship.lasers;
+        this._fireSpeed = options.spaceship.lasers.speed;
+        this._fireRate = options.spaceship.lasers.rate;
+        this._nbLasers = options.spaceship.laser;
         this._life = lifes;
         this._lasers = lasers;
 
@@ -32,10 +33,6 @@ class Spaceship extends Actor {
         this.currentTexture = Spaceship.texture;
     }
 
-    /**
-     *
-     * @return {*|Enemy.shader|Actor.shader}
-     */
     shader() {
         return Spaceship.shader;
     }
@@ -49,7 +46,9 @@ class Spaceship extends Actor {
     }
 
     set lasers(lasers) {
-        this._nbLasers = lasers > Spaceship.MAX_LASERS ? Spaceship.MAX_LASERS : lasers;
+        this._nbLasers = lasers > Spaceship.MAX_LASERS
+          ? Spaceship.MAX_LASERS
+          : lasers;
     }
 
     get life() {
@@ -65,7 +64,9 @@ class Spaceship extends Actor {
     }
 
     set fireRate(fireRate) {
-        this._fireRate = fireRate < Spaceship.MAX_FIRE_RATE ? Spaceship.MAX_FIRE_RATE : fireRate;
+        this._fireRate = fireRate < Spaceship.MAX_FIRE_RATE
+            ? Spaceship.MAX_FIRE_RATE
+            : fireRate;
     }
 
     get speed() {
@@ -73,25 +74,27 @@ class Spaceship extends Actor {
     }
 
     set speed(speed) {
-        const s = speed > Spaceship.MAX_SPEED ? Spaceship.MAX_SPEED : speed;
+        const s = speed > Spaceship.MAX_SPEED
+            ? Spaceship.MAX_SPEED
+            : speed;
         this.verticalSpeed = s;
         this.horizontalSpeed = s;
     }
 
-    get speed() {
-      return (this.verticalSpeed + this.horizontalSpeed) / 2;
+    get fireSpeed() {
+      return this._fireSpeed;
     }
 
-    set speed(speed) {
-      const s = speed > Spaceship.MAX_SPEED ? Spaceship.MAX_SPEED : speed;
-      this.verticalSpeed = s;
-      this.horizontalSpeed = s;
+    set fireSpeed(speed) {
+      this._fireSpeed = speed > Spaceship.MAX_FIRE_SPEED
+          ? Spaceship.MAX_FIRE_SPEED
+          : speed
     }
 
     hit() {
         this.life -= 1;
         if (0 === this.life) {
-            this.die()
+            this.die();
         }
         this.flicker = 100;
     }
@@ -124,7 +127,7 @@ class Spaceship extends Actor {
                 if (this.cross(globals.enemyLasers[i])) {
                     this.hit();
                     globals.enemyLasers[i].die();
-                    globals.score(- EnemyLaser.points * 2);
+                    globals.score(- options.enemy.lasers.points * 2);
                 }
             }
         }
@@ -172,7 +175,7 @@ class Spaceship extends Actor {
 
     cross(other) {
         if (this.flicker > 0) {
-            // while playing touched (flickering) animation,
+            // while playing flickering animation,
             // it's impossible to be touched again
             return false;
         }
@@ -194,41 +197,29 @@ class Spaceship extends Actor {
         }
 
         const ll = this.lasers / 2;
-        for (var i = 0; i < ll; i++) {
+        for (let i = 0; i < ll; i++) {
             const y = this.y + 0.1;
             const offset = 0.03 * i;
             this._lasers.push(new Laser(
                 this.x - 0.093 /* this.width / 2.8 */ + offset,
-                y /*this.height / 2*/,
-                this.fireSpeed
+                y,
+                this._fireSpeed
             ));
             this._lasers.push(new Laser(
                 this.x + 0.093 /* this.width / 2.8 */ - offset,
-                y /*this.height / 2*/,
-                this.fireSpeed
+                y,
+                this._fireSpeed
             ));
         }
     }
 
 }
 
-Spaceship.MAX_LASERS = 8;
-Spaceship.MAX_LIFES = 10;
-Spaceship.MAX_FIRE_RATE = 5;
-Spaceship.MAX_SPEED = 0.05;
-
-Spaceship.speed = 0.02;
-Spaceship.lasers = 2;
-Spaceship.fireRate = 20;
-Spaceship.fireSpeed = 0.03;
-Spaceship.lifes = 3;
-Spaceship.z = -0.6;
-
-Spaceship.fireRateBonus = -5;
-Spaceship.lasersBonus = 2;
-Spaceship.fireSpeedBonus = 0.01;
-Spaceship.speedBonus = 0.02;
-Spaceship.lifeBonus = 1;
+Spaceship.MAX_LASERS = options.spaceship.max.laser;
+Spaceship.MAX_LIFES = options.spaceship.max.life;
+Spaceship.MAX_FIRE_RATE = options.spaceship.max.lasers.rate;
+Spaceship.MAX_SPEED = options.spaceship.max.speed;
+Spaceship.MAX_FIRE_SPEED = options.spaceship.max.lasers.speed;
 
 Spaceship.init = function (textures) {
 
@@ -248,9 +239,9 @@ Spaceship.init = function (textures) {
         new Audio('./son/Xwingblaster.mp3'),
     ];
 
-    Spaceship.audio.forEach(track => {
+    /*Spaceship.audio.forEach(track => {
         track.volume = 0.7;
-    });
+    });*/
 
     Spaceship.shader = Actor.initShaders(`
         // *** le vertex shader ***

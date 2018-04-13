@@ -1,13 +1,18 @@
 class Bonus extends Actor {
 
+    /**
+     * @param {Number} x the position on x axis
+     * @param {Number} speed the y movement at each frame
+     */
     constructor(x, speed) {
-        super(0.05, 0.05, x, 1.1, Bonus.z);
+        super(0.05, 0.05, x, 1.1, options.bonus.z);
         this.audio = new Audio('./son/explosion.mp3');
         this.velocity = speed;
         this.activated = false;
     }
 
     /**
+     * @override
      * called when a bonus is collected
      * @param {Spaceship} target
      * @param {Game} globals
@@ -20,10 +25,16 @@ class Bonus extends Actor {
     }
 
     /**
+     * @override
+     * Every child who wants to implement a time based bonus need
+     * to override this method
+     * This method is called instead of 'update' after 'collected'
+     * The bonus is not drawn anymore on the screen but present in memory
      *
-     * @param ticks
-     * @param keys
-     * @param globals
+     * The parameters are the same as 'Actor::update'
+     * @param {Number} ticks
+     * @param {Object} keys
+     * @param {Game} globals
      * @return {boolean} shouldn't be updated anymore (bonus ended)
      */
     active(ticks, keys, globals) {
@@ -41,7 +52,8 @@ class Bonus extends Actor {
     update(ticks, keys, globals) {
         super.update(ticks, keys, globals);
 
-        if(this.activated) {
+        // after activation, pass to active
+        if (this.activated) {
             return this.active(ticks, keys, globals);
         }
 
@@ -57,6 +69,7 @@ class Bonus extends Actor {
     }
 
     draw() {
+        // do not draw anymore after activation
         if (this.activated) {
             return;
         }
@@ -64,10 +77,6 @@ class Bonus extends Actor {
     }
 
 }
-
-Bonus.z = -0.5;
-
-Bonus.verticalSpeed = 0.02;
 
 Bonus.init = function (textures) {
 
@@ -94,7 +103,7 @@ Bonus.init = function (textures) {
           // stockage de la coordonnee de texture
           vTextureCoord = aTextureCoord;
         }
-    `,`
+    `, `
         // *** le fragment shader ***
         precision highp float; // precision des nombres flottant
 

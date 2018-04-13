@@ -6,14 +6,14 @@ class SpeedBonus extends Bonus {
 
     collected(target, globals) {
         super.collected(target, globals);
-        target.fireSpeed += Spaceship.fireSpeedBonus;
-        target.speed += Spaceship.speedBonus;
+        target.fireSpeed += options.spaceship.bonus.lasers.speed;
+        target.speed += options.spaceship.bonus.speed;
     }
 
 }
 
-SpeedBonus.rate = 10;
+SpeedBonus.rate = options.bonus.rates.speed;
 
 SpeedBonus.init = function (textures) {
     SpeedBonus.texture = textures[4];
-}
+};

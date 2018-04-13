@@ -6,8 +6,8 @@ class LaserBonus extends Bonus {
 
     collected(target, globals) {
         super.collected(target, globals);
-        target.lasers += Spaceship.lasersBonus;
-        target.fireSpeed += Spaceship.fireSpeedBonus;
+        target.lasers += options.spaceship.bonus.laser;
+        target.fireRate += options.spaceship.bonus.lasers.rate;
     }
 
 }
@@ -16,6 +16,6 @@ LaserBonus.rate = 10;
 
 LaserBonus.init = function (textures) {
     LaserBonus.texture = textures[3];
-}
+};
 
-LaserBonus.rate = 3;
+LaserBonus.rate = options.bonus.rates.laser;

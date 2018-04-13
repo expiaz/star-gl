@@ -16,7 +16,7 @@ class Formation extends Bonus {
         if (0 === ticks % 8) {
             let i = ++this.i;
             let offset = 0;
-            if (pair(i)) {
+            if (Utils.pair(i)) {
                 // offset less bc no middle enemy
                 offset -= 0.075;
             } else { // impair, one at 0

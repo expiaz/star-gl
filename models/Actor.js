@@ -1,7 +1,8 @@
 class Actor {
 
     /**
-     *
+     * représente un acteur ayant une position, une hitbox, un shader,
+     * un sprite, et pouvant s'actualiser au fil du temps
      * @param {Number} width
      * @param {Number} height
      * @param {Number} x
@@ -14,6 +15,7 @@ class Actor {
         this.height = height;
         this.dead = false;
 
+        // pré-calcul de la hitbox avant chaque frame
         this._updateHibox();
 
         // cree un nouveau buffer sur le GPU et l'active
@@ -82,34 +84,55 @@ class Actor {
         };
     }
 
+    /**
+    * @override
+    * Every child must override this method
+    * to bring their own shader
+    */
     shader() {
         return Actor.shader;
     }
 
+    /**
+    * @override
+    * Every child must override this method
+    * to bring their own texture
+    */
     texture() {
         return Actor.texture;
     }
 
+    /**
+    * kill the unit, doesn't update / draw anymore and release memory
+    */
     die() {
         this.dead = true;
     }
 
     /**
-     *
-     * @param {Number} ticks
-     * @param {Object} keys
-     * @param {Game} globals
-     * @return {Boolean} is out of bounds or not
+     * @override
+     * Called every frame to update the unit
+     * @param {Number} ticks frames elapsed since game launch
+     * @param {Object} keys {keyCode => pressed} the pressed keys
+     * @param {Game} globals the game object to hook methods
+     * @return {Boolean} kill the unit or not
      */
     update(ticks, keys, globals) {
         this._updateHibox();
         return this.dead;
     }
 
+    /**
+    * @return {Object}
+    */
     hitbox() {
         return this._hitbox;
     }
 
+    /**
+    * the limits on +x, -x, +y, -y of the unit
+    * @return {Object}
+    */
     bounds() {
         return {
             right: World.MAX_X - this.width/2,
@@ -119,10 +142,16 @@ class Actor {
         };
     }
 
+    /**
+    * send the uniform variables (@see shader)
+    */
     sendUniforms(shader) {
         gl.uniform2fv(shader.positionUniform, this.positions);
     }
 
+    /**
+    * send the texture variable (@see texture)
+    */
     sendTexture(shader, texture) {
         gl.activeTexture(gl.TEXTURE0); // on active l'unite de texture 0
         gl.bindTexture(gl.TEXTURE_2D, texture); // on place texture dans l'unité active
@@ -130,6 +159,9 @@ class Actor {
         gl.clearColor(0, 0, 0, 0); // TODO qu'est-ce que ça change ?
     }
 
+    /**
+    * send the attributes variables (@see shader)
+    */
     sendAttributes(shader) {
         // active le buffer de position et fait le lien avec l'attribut aVertexPosition dans le shader
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
@@ -139,6 +171,11 @@ class Actor {
         gl.vertexAttribPointer(shader.textureCoordAttribute, this.coordBuffer.itemSize, gl.FLOAT, false, 0, 0);
     }
 
+    /**
+    * calculate collision between 2 Actors
+    * @param {Actor} other
+    * @return {Boolean} collided
+    */
     cross (other) {
         const hitbox = this.hitbox(), oHitbox = other.hitbox();
         return oHitbox.x < hitbox.x + hitbox.width &&
@@ -147,6 +184,10 @@ class Actor {
             oHitbox.height + oHitbox.y > hitbox.y;
     }
 
+    /**
+    * called every frame
+    * send the variables and draw the element
+    */
     draw() {
         const shader = this.shader();
         const texture = this.texture();
@@ -162,6 +203,12 @@ class Actor {
 
 }
 
+/**
+* helper to init a shader
+* @param {String} vs the vertex shader
+* @param {String} fs the fragment shader
+* @return {WebGLProgram} the compiled shader
+*/
 Actor.initShaders = function (vs, fs) {
     const shader = Utils.initShaders(vs, fs);
 
@@ -182,4 +229,19 @@ Actor.initShaders = function (vs, fs) {
     shader.textureUniform = gl.getUniformLocation(shader, "uTexture");
 
     return shader;
+};
+
+/**
+* @override
+* @static
+* Every child must implement this method on their class
+* It initialise texture, shader and sound for the whole class
+* You must call it manually => @see Game:30
+* @param {WebGLTexture[]} textures the textures initialised @see Game:6
+* @return {void}
+*/
+Actor.init = function(textures) {
+  // Actor.texture = textures[0];
+  // Actor.audio = new Audio('file/to/path.mp3');
+  // Actor.shader = initShader('', '');
 };

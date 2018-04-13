@@ -1,3 +1,5 @@
+
+
 class Utils {}
 
 /**
@@ -106,7 +108,7 @@ Utils.injectColorPicker = function injectColorPicker(container, hook) {
 /**
  *
  * @param {Array} array
- * @return {Array}
+ * @return {Array} suffled array
  */
 Utils.shuffle = function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -127,9 +129,10 @@ Utils.shuffle = function shuffle(array) {
     return array;
 };
 
-const pair = x => !(x % 2);
+Utils.pair = x => !(x % 2);
 
-class Lifes {
+// helper to handle shared Lifes between multiple payers
+Utils.Lifes = class Lifes {
 
     constructor(lifes = 3, max = 10) {
         this._lifes = lifes;
@@ -164,4 +167,4 @@ class Lifes {
         return this._lifes;
     }
 
-}
+};

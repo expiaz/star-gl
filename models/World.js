@@ -1,5 +1,6 @@
+
 class World {}
-World.MIN_Y = -1;
-World.MAX_Y = 1;
-World.MAX_X = 1;
-World.MIN_X = -1;
+World.MIN_Y = options.world.y.min;
+World.MAX_Y = options.world.y.max;
+World.MAX_X = options.world.x.max;
+World.MIN_X = options.world.x.min;

@@ -26,6 +26,7 @@ class Game {
             'img/heart.png',
             'img/empty_heart.png',
         ]).then(textures => {
+            // init all the actors
             Heightfield.init(textures);
             Background.init(textures);
             Spaceship.init(textures);
@@ -38,46 +39,72 @@ class Game {
                 LifeBonus,
                 LaserBonus,
                 SpeedBonus,
-                TimeBonus,
+                InvincibleBonus,
+                // TimeBonus
             ].reduce(
                 (all, bonus) => all.concat(new Array(bonus.rate || 1).fill(bonus)),
                 []
             ));
 
+            /**
+             * @type {Laser[]}
+             */
             this.lasers = [];
+            /**
+             * @type {EnemyLaser[]}
+            */
             this.enemyLasers = [];
+            /**
+             * @type {Enemy}
+             */
+            this.enemies = [];
+            /**
+             * @type {Bonus[]}
+             */
+            this.bonus = [];
+            /**
+             * @type {Spaceship[]}
+             */
+            this.spaceships = [];
 
+            // for the procedural background
             this.fbo = new FBO(canvas.width, canvas.height, 1, false);
             this.heightfield = new Heightfield();
             this.background = new Background(this.fbo.texture(0));
-            this.enemies = [];
-            this.bonus = [];
-            this.spaceships = [];
 
             this.fps = 0;
             // used to accelerate or diminize moving objects (and game speed)
             this.timeSpeed = 1;
-            this.bonsuRate = Game.bonusRate;
-            this.enemyRate = Game.enemyRate;
+            // spawn rate on points for bonus
+            this.bonusRate = options.bonus.rate;
+            // spawn rate on frames for enemy
+            this.enemyRate = options.enemy.rate;
+
+            // ticks elapsed since game started
             this.ticks = 0;
+            // player score
             this.totalScore = 0;
-
-            this.timer = Date.now();
-
+            // pressed keys
             this.keys = {};
+
             this.controls = {
-                pause: 'P'.charCodeAt(0),
-                sound: 'M'.charCodeAt(0)
+                pause: options.controls.pause.charCodeAt(0),
+                sound: options.controls.mute.charCodeAt(0)
             };
 
-            this.audio = false;
+            // play the sounds or mute
+            this.audio = !options.mute;
+            // re-draw game
             this.paused = false;
+            // game finished
             this.ended = false;
+            // game started
             this.started = false;
 
-
+            // final score board
             this.scoreBoard = JSON.parse(localStorage.getItem('star-gl') || '[]');
 
+            // DOM object to update game layout (not in canvas)
             this.layout = {
                 layout: document.querySelector('.game-layout'),
                 life: document.querySelector('.game-layout .life'),
@@ -90,8 +117,12 @@ class Game {
                 game: document.querySelector('.game-layout .game-screen')
             };
 
+            /*
+             * INIT
+             */
+
             this.layout.layout.removeChild(this.layout.upscore);
-            this.lifes = new Lifes(Spaceship.lifes, Spaceship.MAX_LIFES);
+            this.lifes = new Utils.Lifes(Spaceship.lifes, Spaceship.MAX_LIFES);
             this.drawLifes();
 
             // la couleur de fond sera noire
@@ -108,11 +139,12 @@ class Game {
                 if (false === this.started) {
                     this.start();
                 } else if (this.ended === true) {
+                    // F5 when finished
                     window.location.reload();
                 }
             });
 
-            this.layout.score.textContent = 0;
+            this.layout.score.textContent = '0';
             this.layout.start.style.opacity = '1';
 
             this.tick = this.tick.bind(this);
@@ -120,7 +152,7 @@ class Game {
     }
 
     start() {
-        // dessine la scene
+        // first draw
         this.started = true;
         this.layout.start.style.opacity = '0';
 
@@ -141,11 +173,14 @@ class Game {
         this.ended = true;
 
         this.scoreBoard.push(this.totalScore);
-        const scoreBoard = this.scoreBoard.sort((a,b) => a < b).filter(e => e > 0).reduce((acc, e) => {
-            if (!~acc.indexOf(e)) acc.push(e);
-            return acc;
-        }, []).slice(0, 5);
+        const scoreBoard = this.scoreBoard.sort((a,b) => a < b)
+            .filter(e => e > 0)
+            .reduce((acc, e) => {
+                if (!~acc.indexOf(e)) acc.push(e);
+                return acc;
+            }, []).slice(0, 5);
         localStorage.setItem('star-gl', JSON.stringify(scoreBoard));
+
         const list = this.layout.end.querySelector('.highscores');
         scoreBoard.forEach(score => {
             const li = document.createElement('li');
@@ -155,11 +190,15 @@ class Game {
             }
             list.appendChild(li);
         });
-        this.layout.end.querySelector('.playerscore').textContent = this.totalScore;
+        this.layout.end
+            .querySelector('.playerscore').textContent = this.totalScore;
 
         this.layout.end.style.opacity = '1';
     }
 
+    /**
+     * @param {Number} number the points to add
+     */
     score(number) {
         this.totalScore += number;
         if (this.totalScore < 0) {
@@ -169,9 +208,14 @@ class Game {
         this.drawScore(number);
     }
 
+    /**
+     * toggle pause
+     * @return {Boolean} paused
+     */
     pause() {
         this.paused = !this.paused;
         if (false === this.paused) {
+            // restart
             requestAnimationFrame(this.tick);
         }
         return this.paused;
@@ -179,7 +223,9 @@ class Game {
 
     onKeyDown(event) {
         this.keys[event.keyCode] = true;
+        // on pause
         !!this.keys[this.controls.pause] && this.pause();
+        // on mute
         if (!!this.keys[this.controls.sound]) {
             this.audio = !this.audio;
         }
@@ -200,10 +246,13 @@ class Game {
 
     drawScore(number) {
         this.layout.score.textContent = this.totalScore;
+        // play score animation
         const node = this.layout.upscore.cloneNode(true);
-        node.innerHTML = number < 0 ? number : `<span class="arial">+</span>${number}`;
+        node.innerHTML = number < 0
+            ? number
+            : `<span class="arial">+</span>${number}`;
         node.style.color = number < 0 ? 'red' : 'green';
-        node.style.left = 50 + String(this.totalScore).length * 10;
+        node.style.left = `${50 + String(this.totalScore).length * 10}`;
         this.layout.layout.appendChild(node);
         setTimeout(() => {
             this.layout.layout.removeChild(node);
@@ -211,19 +260,24 @@ class Game {
     }
 
     drawLifes() {
-        while (this.layout.life.firstChild) this.layout.life.removeChild(this.layout.life.firstChild);
+        while (this.layout.life.firstChild) {
+           this.layout.life.removeChild(this.layout.life.firstChild);
+        }
         const left = this.lifes.left;
         const loss = this.lifes.loss;
         for (let i = 0; i < left; ++i) {
-            this.layout.life.appendChild(this.layout.fullLife.cloneNode(true));
+            this.layout.life.appendChild(
+                this.layout.fullLife.cloneNode(true)
+            );
         }
         for (let i = 0; i < loss; ++i) {
-            this.layout.life.appendChild(this.layout.emptyLife.cloneNode(true));
+            this.layout.life.appendChild(
+                this.layout.emptyLife.cloneNode(true)
+            );
         }
     }
 
     update() {
-
         // keep the actual score for playing animations only when score change
         const scoreNow = this.totalScore;
         const lifeNow = this.lifes.left;
@@ -235,6 +289,17 @@ class Game {
         this.background.update(relativeTicks, this.keys, this);
 
         let i;
+
+        // while is used here instead of for because of splice
+        // when splicing an array at index i, the next element will be i+2
+        // so i+1 will be skipped
+        // by iterating over the array from the end, when splicing a i,
+        // i+1 is removed and becomes i+2 but we move the i-1 bc we iterate
+        // backward so we don't care
+
+        // also, before Array.prototype.filter was used, but for permormance
+        // reasons (instantiate 5 arrays each frame), we moved to iterating
+        // event if splice may cause the same issues
 
         i = this.spaceships.length;
         while (i--) {
@@ -273,15 +338,31 @@ class Game {
             }
         }
 
-        //const enemyRate = Math.max(Game.enemyRate - Math.floor(this.timer / 10), 5)
-        if(0 === relativeTicks % Game.enemyRate) {
-            this.enemies.push(new Enemy(Math.random() - Math.random(), 1.1, Math.random(), this.enemyLasers));
+        // TODO inscrease the spawn rate over time
+        if(0 === relativeTicks % this.enemyRate) {
+            this.enemies.push(new Enemy(
+                Math.random() - Math.random(),
+                1.1,
+                Math.random(),
+                this.enemyLasers
+            ));
         }
 
-        if (this.totalScore !== scoreNow
-            && Math.floor(this.totalScore / Game.bonusRate) > Math.floor(scoreNow / Game.bonusRate)) {
-            const type =  Game.bonus[Math.floor(Math.random() * Game.bonus.length)];
-            this.bonus.push(new type(Math.random() - Math.random(), Bonus.verticalSpeed));
+        if (this.totalScore !== scoreNow &&
+            Math.floor(
+                this.totalScore / this.bonusRate
+            ) > Math.floor(
+              scoreNow / this.bonusRate
+            )) {
+            // get a random Bonus class
+            const type =  Game.bonus[Math.floor(
+                Math.random() * Game.bonus.length
+            )];
+            // instaniate it
+            this.bonus.push(new type(
+                Math.random() - Math.random(),
+                options.bonus.speed
+            ));
         }
 
         if (this.lifes.left !== lifeNow) {
