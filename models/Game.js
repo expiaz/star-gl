@@ -25,6 +25,7 @@ class Game {
             'img/explosions/explosion14.png',
             'img/heart.png',
             'img/empty_heart.png',
+            'img/island.png',
         ]).then(textures => {
             // init all the actors
             Heightfield.init(textures);
@@ -34,6 +35,7 @@ class Game {
             Laser.init(textures);
             EnemyLaser.init(textures);
             Bonus.init(textures);
+            Island.init(textures);
 
             Game.bonus = Utils.shuffle([
                 LifeBonus,
@@ -66,6 +68,10 @@ class Game {
              * @type {Spaceship[]}
              */
             this.spaceships = [];
+            /**
+             * @type {Island[]}
+             */
+            this.island = [];
 
             // for the procedural background
             this.fbo = new FBO(canvas.width, canvas.height, 1, false);
@@ -317,6 +323,13 @@ class Game {
             }
         }
 
+        i = this.island.length;
+        while (i--) {
+            if (this.island[i].update(relativeTicks, this.keys, this)) {
+                this.island.splice(i, 1);
+            }
+        }
+
         i = this.lasers.length;
         while (i--) {
             if (this.lasers[i].update(relativeTicks, this.keys, this)) {
@@ -346,6 +359,10 @@ class Game {
                 Math.random(),
                 this.enemyLasers
             ));
+        }
+
+        if(0 === relativeTicks % Game.islandRate) {
+            this.island.push(new Island(Math.random() - Math.random(), 1.1, 0.004));
         }
 
         if (this.totalScore !== scoreNow &&
@@ -397,6 +414,14 @@ class Game {
             }
         }
 
+        if (this.island.length) {
+            gl.useProgram(Island.shader);
+            for (let i = 0; i < this.island.length; ++i) {
+                console.log('draw');
+                this.island[i].draw();
+            }
+        }
+
         if (this.bonus.length) {
             gl.useProgram(Bonus.shader);
             for (let i = 0; i < this.bonus.length; ++i) {
@@ -428,4 +453,5 @@ class Game {
 }
 
 Game.enemyRate = 30;
+Game.islandRate = 400;
 Game.bonusRate = 1000;

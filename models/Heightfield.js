@@ -50,7 +50,7 @@ class Heightfield {
 
     update(ticks, keys, globals) {
         const timer = ticks * 0.008;
-        const speed = 2.0 * (Math.sin(timer * 0.1) * 0.5 + 0.5);
+        const speed = 0.5;
         this.offset[1] = this.offset[1] + 0.008 * speed;
         this.amplitude = 0.2 + 3.0 * (Math.sin(timer * 0.1) * 0.5 + 0.5);
         this.frequency = 5.0 - speed;
@@ -152,7 +152,7 @@ Heightfield.init = function () {
         
         void main(void) {
           vec2 p = vTextureCoord * 2.0 - vec2(1.0); // coordonnees
-          float n = fractalNoise(p + uOffset) * 0.5 + 0.5; // bruit
+          float n = fractalNoise(p + uOffset) * 0.2 + 0.2; // bruit
         
           gl_FragColor = vec4(vec3(n), 1.0);
         }

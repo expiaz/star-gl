@@ -152,13 +152,14 @@ Background.init = function () {
         vec3 shade(in vec3 n, in float d) {
             vec2 xy = vTextureCoord.xy * 2.0 - vec2(1.0);
             vec3 v = - normalize(vec3(xy.x, xy.y, 1.0)); // vecteur vue
-            vec3 l = normalize(vec3(-0.3, 0.0, 1.0)); // vecteur lumière (pourrait varier au cours du temps pour de meilleurs effets)
+            vec3 l = normalize(vec3(0.0, 1.0, 1.0)); // vecteur lumière (pourrait varier au cours du temps pour de meilleurs effets)
             vec3 r = reflect(l, n);
             float q = 50.0;
             
-            vec3 Ka = vec3(0.0,0.0,0.0);
-            vec3 Kd = vec3(0.3568627450980392,0.21176470588235294,0.1411764705882353);
-            vec3 Ks = vec3(0.0);
+            vec3 Ka = vec3(0.0,0.5,0.6);
+            //vec3 Kd = vec3(0.3568627450980392,0.21176470588235294,0.1411764705882353);
+            vec3 Kd = vec3(0.0,0.1,0.6);
+            vec3 Ks = vec3(0.5);
             
             float coefD = max(dot(n, l), 0.0);
             float coefS = pow(max(dot(v, r), 0.0), q);
