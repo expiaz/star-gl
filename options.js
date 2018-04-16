@@ -91,7 +91,7 @@ const options = {
         speed: 0.02, // vitesse x,y
         life: 1, // nombre de vies
         time: 0.02, // reduction du timeSpeed
-        invincible: 100, // nombre de frames
+        invincible: 60 * 5, // nombre de frames
         lasers: {
           rate: -5, // nombre de frame
           speed: 0.01, // position x,y
@@ -107,6 +107,14 @@ const options = {
           speed: 0.03,
           z: -0.8
       }
-  }
+  },
+
+    background: {
+      island: {
+          z: -0.1,
+          rate: 400,
+          speed: 0.004
+      }
+    }
 
 };

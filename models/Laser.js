@@ -1,7 +1,7 @@
 class Laser extends Actor {
 
-    constructor(x, y, velocity, width = 0.03, height = 0.1) {
-        super(width, height, x, y, options.spaceship.lasers.z);
+    constructor(x, y, velocity) {
+        super(0.03, 0.1, x, y, options.spaceship.lasers.z);
         this.velocity = velocity;
     }
 

@@ -1,7 +1,7 @@
 class Island extends Actor{
 
-    constructor(x, y, velocity, width = 1.0, height = 1.0) {
-        super(width, height, x, y, Island.z);
+    constructor(x, y, velocity) {
+        super(1.0, 1.0, x, y, options.background.island.z);
         this.velocity = velocity;
     }
 
@@ -18,19 +18,10 @@ class Island extends Actor{
             return true;
         }
 
-        /*if (globals.spaceship.cross(this)) {
-            this.die();
-            globals.spaceship.hit();
-            globals.score(- EnemyLaser.points * 2);
-            return true;
-        }*/
-
         this.y -= globals.timeSpeed * this.velocity;
         return this.y < World.MIN_Y;
     }
 }
-
-Island.z = -0.1;
 
 Island.init = function (textures) {
 

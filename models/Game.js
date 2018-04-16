@@ -71,7 +71,7 @@ class Game {
             /**
              * @type {Island[]}
              */
-            this.island = [];
+            this.islands = [];
 
             // for the procedural background
             this.fbo = new FBO(canvas.width, canvas.height, 1, false);
@@ -85,6 +85,8 @@ class Game {
             this.bonusRate = options.bonus.rate;
             // spawn rate on frames for enemy
             this.enemyRate = options.enemy.rate;
+
+            this.islandRate = options.background.island.rate;
 
             // ticks elapsed since game started
             this.ticks = 0;
@@ -172,6 +174,7 @@ class Game {
         this.tick();
 
         this.bonus.push(new Formation(0, 3, this.enemies));
+        this.bonus.push(new InvincibleBonus(0, 0.02));
     }
 
     end() {
@@ -262,7 +265,7 @@ class Game {
         this.layout.layout.appendChild(node);
         setTimeout(() => {
             this.layout.layout.removeChild(node);
-        }, 2000);
+        }, 1000);
     }
 
     drawLifes() {
@@ -323,10 +326,10 @@ class Game {
             }
         }
 
-        i = this.island.length;
+        i = this.islands.length;
         while (i--) {
-            if (this.island[i].update(relativeTicks, this.keys, this)) {
-                this.island.splice(i, 1);
+            if (this.islands[i].update(relativeTicks, this.keys, this)) {
+                this.islands.splice(i, 1);
             }
         }
 
@@ -361,8 +364,12 @@ class Game {
             ));
         }
 
-        if(0 === relativeTicks % Game.islandRate) {
-            this.island.push(new Island(Math.random() - Math.random(), 1.1, 0.004));
+        if(0 === relativeTicks % this.islandRate) {
+            this.islands.push(new Island(
+                Math.random() - Math.random(),
+                1.5,
+                options.background.island.speed
+            ));
         }
 
         if (this.totalScore !== scoreNow &&
@@ -406,6 +413,15 @@ class Game {
         gl.useProgram(Background.shader);
         this.background.draw();
 
+        // z-index 0.1
+        if (this.islands.length) {
+            gl.useProgram(Island.shader);
+            for (let i = 0; i < this.islands.length; ++i) {
+                this.islands[i].draw();
+            }
+        }
+
+        // z-index 0.5
         //dessin des ennemis
         if (this.enemies.length) {
             gl.useProgram(Enemy.shader);
@@ -414,14 +430,7 @@ class Game {
             }
         }
 
-        if (this.island.length) {
-            gl.useProgram(Island.shader);
-            for (let i = 0; i < this.island.length; ++i) {
-                console.log('draw');
-                this.island[i].draw();
-            }
-        }
-
+        // z-index 0.5
         if (this.bonus.length) {
             gl.useProgram(Bonus.shader);
             for (let i = 0; i < this.bonus.length; ++i) {
@@ -429,6 +438,14 @@ class Game {
             }
         }
 
+        // z-index 0.6
+        // dessin du vaisseau (shader par defaut ici)
+        gl.useProgram(Spaceship.shader);
+        for (let i = 0; i < this.spaceships.length; ++i) {
+            this.spaceships[i].draw();
+        }
+
+        // z-index 0.8
         if (this.enemyLasers.length) {
             gl.useProgram(EnemyLaser.shader);
             for (let i = 0; i < this.enemyLasers.length; ++i) {
@@ -436,12 +453,7 @@ class Game {
             }
         }
 
-        // dessin du vaisseau (shader par defaut ici)
-        gl.useProgram(Spaceship.shader);
-        for (let i = 0; i < this.spaceships.length; ++i) {
-            this.spaceships[i].draw();
-        }
-
+        // z-index 0.8
         if (this.lasers.length) {
             gl.useProgram(Laser.shader);
             for (let i = 0; i < this.lasers.length; ++i) {
@@ -451,7 +463,3 @@ class Game {
     }
 
 }
-
-Game.enemyRate = 30;
-Game.islandRate = 400;
-Game.bonusRate = 1000;

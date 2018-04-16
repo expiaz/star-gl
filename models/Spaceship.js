@@ -47,8 +47,8 @@ class Spaceship extends Actor {
 
     set lasers(lasers) {
         this._nbLasers = lasers > Spaceship.MAX_LASERS
-          ? Spaceship.MAX_LASERS
-          : lasers;
+            ? Spaceship.MAX_LASERS
+            : lasers;
     }
 
     get life() {

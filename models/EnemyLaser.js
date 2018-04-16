@@ -1,7 +1,7 @@
 class EnemyLaser extends Actor {
 
-    constructor(x, y, velocity, width = 0.02, height = 0.066) {
-        super(width, height, x, y, options.enemy.lasers.z);
+    constructor(x, y, velocity) {
+        super(0.02, 0.066, x, y, options.enemy.lasers.z);
         this.velocity = velocity;
     }
 
