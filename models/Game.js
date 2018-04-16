@@ -35,7 +35,7 @@ class Game {
             Laser.init(textures);
             EnemyLaser.init(textures);
             Bonus.init(textures);
-            Island.init(textures);
+            BackgroundItem.init(textures);
 
             Game.bonus = Utils.shuffle([
                 LifeBonus,
@@ -69,9 +69,9 @@ class Game {
              */
             this.spaceships = [];
             /**
-             * @type {Island[]}
+             * @type {BackgroundItem[]}
              */
-            this.island = [];
+            this.backgroundItem = [];
 
             // for the procedural background
             this.fbo = new FBO(canvas.width, canvas.height, 1, false);
@@ -323,10 +323,10 @@ class Game {
             }
         }
 
-        i = this.island.length;
+        i = this.backgroundItem.length;
         while (i--) {
-            if (this.island[i].update(relativeTicks, this.keys, this)) {
-                this.island.splice(i, 1);
+            if (this.backgroundItem[i].update(relativeTicks, this.keys, this)) {
+                this.backgroundItem.splice(i, 1);
             }
         }
 
@@ -361,8 +361,8 @@ class Game {
             ));
         }
 
-        if(0 === relativeTicks % Game.islandRate) {
-            this.island.push(new Island(Math.random() - Math.random(), 1.1, 0.004));
+        if(0 === relativeTicks % Game.backgroundItemRate) {
+            this.backgroundItem.push(new BackgroundItem(Math.random() - Math.random(), 1.1, 0.004));
         }
 
         if (this.totalScore !== scoreNow &&
@@ -414,11 +414,11 @@ class Game {
             }
         }
 
-        if (this.island.length) {
-            gl.useProgram(Island.shader);
-            for (let i = 0; i < this.island.length; ++i) {
+        if (this.backgroundItem.length) {
+            gl.useProgram(BackgroundItem.shader);
+            for (let i = 0; i < this.backgroundItem.length; ++i) {
                 console.log('draw');
-                this.island[i].draw();
+                this.backgroundItem[i].draw();
             }
         }
 
@@ -453,5 +453,5 @@ class Game {
 }
 
 Game.enemyRate = 30;
-Game.islandRate = 400;
+Game.backgroundItemRate = 400;
 Game.bonusRate = 1000;
