@@ -18,3 +18,11 @@ une simplicité d'implémentation de nouveaux acteurs.
 ## 13/04/18 - Rémi - Commentaires + Options globals
 - Game.js, Actor.js, Bonus.js commentés
 - options.js contient toutes les options du jeu
+
+## 15/04/18 - Jérémy - Mise en place du backgroud
+- Heightfield.js mise en place d'une vitesse constante ( var speed)
+- Heightfield.js bruit moins important que l'original (pour texturer de l'eau)
+- Background.js modification de phong pour donner un effet d'eau
+- Island.js => BackgroundItem.js creer un objet dans le decor
+- Game.js mise en place du BackgroundItem
+- img ajout d'une texture d'île
