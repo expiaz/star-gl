@@ -35,7 +35,7 @@ class Game {
             Laser.init(textures);
             EnemyLaser.init(textures);
             Bonus.init(textures);
-            Island.init(textures);
+            BackgroundItem.init(textures);
 
             Game.bonus = Utils.shuffle([
                 LifeBonus,
@@ -69,9 +69,9 @@ class Game {
              */
             this.spaceships = [];
             /**
-             * @type {Island[]}
+             * @type {BackgroundItem[]}
              */
-            this.islands = [];
+            this.backgroundItems = [];
 
             // for the procedural background
             this.fbo = new FBO(canvas.width, canvas.height, 1, false);
@@ -86,7 +86,7 @@ class Game {
             // spawn rate on frames for enemy
             this.enemyRate = options.enemy.rate;
 
-            this.islandRate = options.background.island.rate;
+            this.backgroundItemRate = options.background.items.rate;
 
             // ticks elapsed since game started
             this.ticks = 0;
@@ -326,10 +326,10 @@ class Game {
             }
         }
 
-        i = this.islands.length;
+        i = this.backgroundItems.length;
         while (i--) {
-            if (this.islands[i].update(relativeTicks, this.keys, this)) {
-                this.islands.splice(i, 1);
+            if (this.backgroundItems[i].update(relativeTicks, this.keys, this)) {
+                this.backgroundItems.splice(i, 1);
             }
         }
 
@@ -364,11 +364,11 @@ class Game {
             ));
         }
 
-        if(0 === relativeTicks % this.islandRate) {
-            this.islands.push(new Island(
+        if(0 === relativeTicks % this.backgroundItemRate) {
+            this.backgroundItems.push(new BackgroundItem(
                 Math.random() - Math.random(),
                 1.5,
-                options.background.island.speed
+                options.background.items.speed
             ));
         }
 
@@ -414,10 +414,10 @@ class Game {
         this.background.draw();
 
         // z-index 0.1
-        if (this.islands.length) {
-            gl.useProgram(Island.shader);
-            for (let i = 0; i < this.islands.length; ++i) {
-                this.islands[i].draw();
+        if (this.backgroundItems.length) {
+            gl.useProgram(BackgroundItem.shader);
+            for (let i = 0; i < this.backgroundItems.length; ++i) {
+                this.backgroundItems[i].draw();
             }
         }
 
@@ -461,5 +461,4 @@ class Game {
             }
         }
     }
-
 }

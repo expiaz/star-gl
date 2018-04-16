@@ -1,16 +1,16 @@
-class Island extends Actor{
+class BackgroundItem extends Actor{
 
     constructor(x, y, velocity) {
-        super(1.0, 1.0, x, y, options.background.island.z);
+        super(1.0, 1.0, x, y, options.background.items.z);
         this.velocity = velocity;
     }
 
     shader() {
-        return Island.shader;
+        return BackgroundItem.shader;
     }
 
     texture() {
-        return Island.texture;
+        return BackgroundItem.texture;
     }
 
     update(ticks, keys, globals) {
@@ -23,10 +23,10 @@ class Island extends Actor{
     }
 }
 
-Island.init = function (textures) {
+BackgroundItem.init = function (textures) {
 
-    Island.texture = textures[21];
-    Island.shader = Actor.initShaders(`
+    BackgroundItem.texture = textures[21];
+    BackgroundItem.shader = Actor.initShaders(`
         // *** le vertex shader ***
         attribute vec3 aVertexPosition; // la position du sommet
         attribute vec2 aTextureCoord; // sa coordonnee de texture

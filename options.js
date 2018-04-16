@@ -110,7 +110,7 @@ const options = {
   },
 
     background: {
-      island: {
+      items: {
           z: -0.1,
           rate: 400,
           speed: 0.004
