@@ -49,7 +49,7 @@ class Heightfield {
     }
 
     update(ticks, keys, globals) {
-        const timer = ticks * 0.008;
+        const timer = ticks *  0.008;
         const speed = 0.5;
         this.offset[1] = this.offset[1] + 0.008 * speed;
         this.amplitude = 0.2 + 3.0 * (Math.sin(timer * 0.1) * 0.5 + 0.5);

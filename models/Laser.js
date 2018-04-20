@@ -36,7 +36,8 @@ class Laser extends Actor {
             }
         }
 
-        this.y += globals.timeSpeed * this.velocity;
+        // player animated objects aren't subject to speed augmentation
+        this.y += this.velocity;
         return this.y > World.MAX_Y;
     }
 

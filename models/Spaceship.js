@@ -134,8 +134,9 @@ class Spaceship extends Actor {
 
         const bounds = this.bounds();
 
-        const horizontalSpeed = this.horizontalSpeed/* * globals.timeSpeed*/;
-        const verticalSpeed = this.verticalSpeed/* * globals.timeSpeed*/;
+        // player animated objects aren't subject to speed augmentation
+        const horizontalSpeed = this.horizontalSpeed;
+        const verticalSpeed = this.verticalSpeed;
 
         if (keys[this.controls.left]) { // left arrow
             let nextX = this.x - horizontalSpeed;

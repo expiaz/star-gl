@@ -6,7 +6,7 @@ class InvincibleBonus extends Bonus {
 
     collected(target, globals) {
         super.collected(target, globals);
-        this.ticks = 0;
+        this.startAt = 0;
         this.target = target;
 
         this.snapshot = {
@@ -26,12 +26,12 @@ class InvincibleBonus extends Bonus {
         target.fireSpeed = Spaceship.MAX_FIRE_SPEED;
     }
 
-    active(elapsed, keys, globals) {
+    active(ticks, keys, globals) {
         this.target.flicker = 100;
 
-        if (!this.ticks) {
-            this.ticks = elapsed;
-        } else if (elapsed - this.ticks > options.spaceship.bonus.invincible) {
+        if (!this.startAt) {
+            this.startAt = ticks;
+        } else if (ticks - this.startAt > options.bonus.time.invincible) {
             this.target.currentTexture = Spaceship.texture;
             this.target.life = this.snapshot.life;
             this.target.speed = this.snapshot.speed;

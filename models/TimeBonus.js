@@ -6,14 +6,25 @@ class TimeBonus extends Bonus {
 
     collected(target, globals) {
         super.collected(target, globals);
-        this.timer = 1000;
-        globals.timeSpeed -= options.spaceship.bonus.time;
+        this.aborted = globals.timeSpeed - options.bonus.value.time <= options.time.min ||
+            globals.timeSpeed + options.bonus.value.time >= options.time.max;
+        this.startAt = 0;
     }
 
     active(ticks, keys, globals) {
-        this.timer -= 10;
-        if (this.timer <= 0) {
-            globals.timeSpeed += options.spaceship.bonus.time;
+        if (this.aborted) {
+            return true;
+        }
+
+        if (!this.startAt) {
+            this.startAt = ticks;
+            // 1/2 chance de ralentir ou augmenter
+            this.increase = Math.random() > 1/2
+                ? -options.bonus.value.time
+                : options.bonus.value.time;
+            globals.timeSpeed += this.increase;
+        } else if (ticks - this.startAt > options.bonus.time.time) {
+            globals.timeSpeed -= this.increase;
             return true;
         }
         return false;

@@ -1,11 +1,10 @@
 class Formation extends Bonus {
 
-    constructor(x, nb, enemies) {
+    constructor(x, nb) {
         super(x, 0);
         this.activated = true;
         this.nb = nb;
         this.i = 0;
-        this.enemies = enemies;
     }
 
     update(ticks, keys, globals) {

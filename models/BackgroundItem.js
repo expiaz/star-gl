@@ -18,8 +18,8 @@ class BackgroundItem extends Actor{
             return true;
         }
 
-        this.y -= globals.timeSpeed * this.velocity;
-        return this.y < World.MIN_Y;
+        this.y -= this.velocity;
+        return this.y < World.MIN_Y - 0.5;
     }
 }
 

@@ -131,6 +131,8 @@ Utils.shuffle = function shuffle(array) {
 
 Utils.pair = x => !(x % 2);
 
+Utils.random = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+
 // helper to handle shared Lifes between multiple payers
 Utils.Lifes = class Lifes {
 

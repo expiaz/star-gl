@@ -78,9 +78,10 @@ class Game {
             this.heightfield = new Heightfield();
             this.background = new Background(this.fbo.texture(0));
 
+            // frame per second @see Game::start:172 & Game::tick:253
             this.fps = 0;
             // used to accelerate or diminize moving objects (and game speed)
-            this.timeSpeed = 1;
+            this.timeSpeed = options.time.base;
             // spawn rate on points for bonus
             this.bonusRate = options.bonus.rate;
             // spawn rate on frames for enemy
@@ -166,6 +167,8 @@ class Game {
 
         this.spaceships.push(new J1(0, -0.8, this.lifes, this.lasers));
 
+        // calcul des FPS en temps réél,
+        // combien de fois sommes nous passés dans la boucle de draw
         setInterval(() => {
             console.log(this.fps);
             this.fps = 0;
@@ -173,8 +176,10 @@ class Game {
 
         this.tick();
 
-        this.bonus.push(new Formation(0, 3, this.enemies));
+        // FIXME for fun !
+        this.bonus.push(new Formation(0, 3));
         this.bonus.push(new InvincibleBonus(0, 0.02));
+        this.bonus.push(new TimeBonus(0.5, 0.02));
     }
 
     end() {
@@ -291,11 +296,15 @@ class Game {
         const scoreNow = this.totalScore;
         const lifeNow = this.lifes.left;
 
-        // ticks relative to the time speed
-        const relativeTicks = this.ticks * this.timeSpeed;
+        if (0 === this.ticks % options.time.rate) {
+            this.timeSpeed += options.time.value;
+        }
 
-        this.heightfield.update(relativeTicks, this.keys, this);
-        this.background.update(relativeTicks, this.keys, this);
+        // ticks relative to the time speed
+        const relativeTicks = Math.floor(this.ticks * this.timeSpeed);
+
+        this.heightfield.update(this.ticks, this.keys, this);
+        this.background.update(this.ticks, this.keys, this);
 
         let i;
 
@@ -312,7 +321,7 @@ class Game {
 
         i = this.spaceships.length;
         while (i--) {
-            if (this.spaceships[i].update(relativeTicks, this.keys, this)) {
+            if (this.spaceships[i].update(this.ticks, this.keys, this)) {
                 // game over no more lifes
                 this.end();
                 return;
@@ -335,7 +344,7 @@ class Game {
 
         i = this.lasers.length;
         while (i--) {
-            if (this.lasers[i].update(relativeTicks, this.keys, this)) {
+            if (this.lasers[i].update(this.ticks, this.keys, this)) {
                 this.lasers.splice(i, 1);
             }
         }
@@ -387,6 +396,14 @@ class Game {
                 Math.random() - Math.random(),
                 options.bonus.speed
             ));
+
+            // formation
+            if (Math.random() > options.enemy.formation.rate) {
+                this.bonus.push(new Formation(
+                    Math.random() - Math.random(),
+                    Utils.random(options.enemy.formation.min, options.enemy.formation.max)
+                ));
+            }
         }
 
         if (this.lifes.left !== lifeNow) {
